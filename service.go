@@ -3,28 +3,31 @@ package main
 import (
 	"context"
 	"errors"
-	"strings"
+	"log"
+
+	vault "github.com/hashicorp/vault/api"
 )
 
-// StringService provides operations on strings.
-type StringService interface {
-	Uppercase(context.Context, string) (string, error)
-	Count(context.Context, string) int
+// Manages vault keys and executes transactions against an eximchain node
+type TransactionExecutorService interface {
+	GetKey(context.Context) (string, error)
 }
 
-// stringService is a concrete implementation of StringService
-type stringService struct{}
+// concrete implementation of TransactionExecutorService
+type transactionExecutorService struct {
+	vaultClient *vault.Client
+}
 
-func (stringService) Uppercase(_ context.Context, s string) (string, error) {
-	if s == "" {
-		return "", ErrEmpty
+func (svc transactionExecutorService) GetKey(_ context.Context) (string, error) {
+	pathArg := "keys/singleton"
+	vault := svc.vaultClient.Logical()
+	secret, err := vault.Read(pathArg)
+	if err != nil {
+		log.Fatal(err)
+		return "", ErrVault
 	}
-	return strings.ToUpper(s), nil
+	return secret.Data["key"].(string), nil
 }
 
-func (stringService) Count(_ context.Context, s string) int {
-	return len(s)
-}
-
-// ErrEmpty is returned when an input string is empty.
-var ErrEmpty = errors.New("empty string")
+// ErrVault is returned when there is an error accessing vault.
+var ErrVault = errors.New("error accessing vault")
