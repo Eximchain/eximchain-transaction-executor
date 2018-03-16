@@ -32,18 +32,18 @@ func GetRole() (string, error) {
 	return role, nil
 }
 
-func LoginAws(v *vault.Client) error {
+func LoginAws(v *vault.Client) (string, error) {
 	loginData, err := awsauth.GenerateLoginData("", "", "", "")
 	if err != nil {
-		return err
+		return "", err
 	}
 	if loginData == nil {
-		return fmt.Errorf("got nil response from GenerateLoginData")
+		return "", fmt.Errorf("got nil response from GenerateLoginData")
 	}
 
 	role, err := GetRole()
 	if err != nil {
-		return err
+		return "", err
 	}
 	loginData["role"] = role
 
@@ -51,23 +51,22 @@ func LoginAws(v *vault.Client) error {
 
 	secret, err := v.Logical().Write(path, loginData)
 	if err != nil {
-		return err
+		return "", err
 	}
 	if secret == nil {
-		return fmt.Errorf("empty response from credential provider")
+		return "", fmt.Errorf("empty response from credential provider")
 	}
 	if secret.Auth == nil {
-		return fmt.Errorf("auth secret has no auth data")
+		return "", fmt.Errorf("auth secret has no auth data")
 	}
 
 	token := secret.Auth.ClientToken
-	v.SetToken(token)
-
-	return nil
+	return token, nil
 }
 
 func main() {
 	vaultAddressFlag := flag.String("vault-address", "http://127.0.0.1:8200", "The address at which vault can be accessed")
+	authTokenFlag := flag.String("auth-token", "", "An auth token to use instead of AWS authorization, for help with testing")
 	flag.Parse()
 
 	vaultCFG := vault.DefaultConfig()
@@ -80,16 +79,16 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// TODO: Put this behind a command line flag so we can test
-	if true {
-		err := LoginAws(vaultClient)
+	var token string
+	if *authTokenFlag != "" {
+		token = *authTokenFlag
+	} else {
+		token, err = LoginAws(vaultClient)
 		if err != nil {
 			log.Fatal(err)
 		}
-	} else {
-		// Magic token for dev vault server
-		vaultClient.SetToken("63b9d575-d4d3-bb0c-8ac0-d2562d142f6c")
 	}
+	vaultClient.SetToken(token)
 
 	svc := transactionExecutorService{vaultClient: vaultClient}
 
