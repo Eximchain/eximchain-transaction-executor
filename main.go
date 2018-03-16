@@ -13,6 +13,7 @@ import (
 	httptransport "github.com/go-kit/kit/transport/http"
 	vault "github.com/hashicorp/vault/api"
 	awsauth "github.com/hashicorp/vault/builtin/credential/aws"
+	cmd "github.com/hashicorp/vault/command"
 )
 
 // Expects to be running in EC2
@@ -53,6 +54,21 @@ func LoginAws(v *vault.Client) error {
 	}
 	if secret == nil {
 		return fmt.Errorf("empty response from credential provider")
+	}
+	if secret.Auth == nil {
+		return fmt.Errorf("auth secret has no auth data")
+	}
+
+	token := secret.Auth.ClientToken
+
+	tokenHelper, err := cmd.DefaultTokenHelper()
+	if err != nil {
+		return err
+	}
+
+	err = tokenHelper.Store(token)
+	if err != nil {
+		return err
 	}
 
 	return nil
