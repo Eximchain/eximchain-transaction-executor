@@ -13,7 +13,6 @@ import (
 	httptransport "github.com/go-kit/kit/transport/http"
 	vault "github.com/hashicorp/vault/api"
 	awsauth "github.com/hashicorp/vault/builtin/credential/aws"
-	cmd "github.com/hashicorp/vault/command"
 )
 
 // Expects to be running in EC2
@@ -60,16 +59,7 @@ func LoginAws(v *vault.Client) error {
 	}
 
 	token := secret.Auth.ClientToken
-
-	tokenHelper, err := cmd.DefaultTokenHelper()
-	if err != nil {
-		return err
-	}
-
-	err = tokenHelper.Store(token)
-	if err != nil {
-		return err
-	}
+	v.SetToken(token)
 
 	return nil
 }
