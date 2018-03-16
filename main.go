@@ -59,7 +59,10 @@ func LoginAws(v *vault.Client) error {
 
 func main() {
 	vaultCFG := vault.DefaultConfig()
-	vaultCFG.Address = "http://127.0.0.1:8200"
+	// TODO: Put this behind a command line flag so we can test
+	if false {
+		vaultCFG.Address = "http://127.0.0.1:8200"
+	}
 
 	var err error
 	vaultClient, err := vault.NewClient(vaultCFG)
@@ -67,7 +70,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// TODO: Put this behind a command line flag so we can do either auth
+	// TODO: Put this behind a command line flag so we can test
 	if true {
 		LoginAws(vaultClient)
 	} else {
