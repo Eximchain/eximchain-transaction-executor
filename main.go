@@ -80,7 +80,10 @@ func main() {
 
 	// TODO: Put this behind a command line flag so we can test
 	if true {
-		LoginAws(vaultClient)
+		err := LoginAws(vaultClient)
+		if err != nil {
+			log.Fatal(err)
+		}
 	} else {
 		// Magic token for dev vault server
 		vaultClient.SetToken("63b9d575-d4d3-bb0c-8ac0-d2562d142f6c")
