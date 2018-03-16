@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -58,11 +59,12 @@ func LoginAws(v *vault.Client) error {
 }
 
 func main() {
+	vaultUrlFlag := flag.String("vaulturl", "http://127.0.0.1:8200", "The url at which vault can be accessed")
+	flag.Parse()
+
 	vaultCFG := vault.DefaultConfig()
 	// TODO: Put this behind a command line flag so we can test
-	if false {
-		vaultCFG.Address = "http://127.0.0.1:8200"
-	}
+	vaultCFG.Address = *vaultUrlFlag
 
 	var err error
 	vaultClient, err := vault.NewClient(vaultCFG)
