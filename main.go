@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -22,8 +23,13 @@ func GetRole() (string, error) {
 		return "", err
 	}
 	// Our instance profile conveniently has the same name as the role
-	profile := iam.InstanceProfileID
-	return profile, nil
+	profile := iam.InstanceProfileArn
+	splitArn := strings.Split(profile, "/")
+	if len(splitArn) < 2 {
+		return "", fmt.Errorf("no / character found in instance profile ARN")
+	}
+	role := splitArn[1]
+	return role, nil
 }
 
 func LoginAws(v *vault.Client) error {
