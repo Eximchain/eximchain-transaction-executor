@@ -23,7 +23,6 @@ func (svc transactionExecutorService) GetKey(_ context.Context) (string, error) 
 	vault := svc.vaultClient.Logical()
 	secret, err := vault.Read(pathArg)
 	if err != nil {
-		log.Fatal(err)
 		return "", ErrVault
 	}
 	return secret.Data["key"].(string), nil
