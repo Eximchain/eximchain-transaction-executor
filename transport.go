@@ -34,6 +34,6 @@ func encodeResponse(_ context.Context, w http.ResponseWriter, response interface
 type getKeyRequest struct{}
 
 type getKeyResponse struct {
-	V   string `json:"v"`
+	Key string `json:"Key"`
 	Err string `json:"err,omitempty"`
 }
