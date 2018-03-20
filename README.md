@@ -1,3 +1,6 @@
-# eximchain-transaction-executor
+# Test Cases
 
-README TODO
+```sh
+curl -XPOST -d'{}' localhost:8080/get-key
+curl -XPOST -d'{}' localhost:8080/generate-key
+```
