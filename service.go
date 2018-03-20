@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
 	"log"
 
@@ -45,7 +46,9 @@ func (svc transactionExecutorService) GenerateKey(_ context.Context) (string, er
 		log.Println(err)
 		return "", ErrKeystore
 	}
-	return account.Address.Str(), nil
+
+	address := "0x" + hex.EncodeToString(account.Address.Bytes())
+	return address, nil
 }
 
 // ErrVault is returned when there is an error accessing vault.
