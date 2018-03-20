@@ -11,7 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/eximchain/go-ethereum/accounts/keystore"
 
-	gethAccounts "github.com/eximchain/go-ethereum/accounts"
 	httptransport "github.com/go-kit/kit/transport/http"
 	vault "github.com/hashicorp/vault/api"
 	awsauth "github.com/hashicorp/vault/builtin/credential/aws"
@@ -69,8 +68,10 @@ func LoginAws(v *vault.Client) (string, error) {
 func main() {
 	vaultAddressFlag := flag.String("vault-address", "http://127.0.0.1:8200", "The address at which vault can be accessed")
 	authTokenFlag := flag.String("auth-token", "", "An auth token to use instead of AWS authorization, for help with testing")
+	keyDirFlag := flag.String("keystore", "/home/ubuntu/.ethereum/keystore", "The directory to use as a keystore")
 	flag.Parse()
 
+	// Vault client setup
 	vaultCFG := vault.DefaultConfig()
 	// TODO: Put this behind a command line flag so we can test
 	vaultCFG.Address = *vaultAddressFlag
@@ -92,7 +93,10 @@ func main() {
 	}
 	vaultClient.SetToken(token)
 
-	svc := transactionExecutorService{vaultClient: vaultClient}
+	gethKeyDir := *keyDirFlag
+	gethKeystore := keystore.NewKeyStore(gethKeyDir, keystore.StandardScryptN, keystore.StandardScryptP)
+
+	svc := transactionExecutorService{vaultClient: vaultClient, keystore: gethKeystore}
 
 	getKeyHandler := httptransport.NewServer(
 		makeGetKeyEndpoint(svc),
@@ -100,6 +104,13 @@ func main() {
 		encodeResponse,
 	)
 
+	generateKeyHandler := httptransport.NewServer(
+		makeGenerateKeyEndpoint(svc),
+		decodeGenerateKeyRequest,
+		encodeResponse,
+	)
+
 	http.Handle("/get-key", getKeyHandler)
+	http.Handle("/generate-key", generateKeyHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
