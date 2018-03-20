@@ -9,7 +9,9 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/eximchain/go-ethereum/accounts/keystore"
 
+	gethAccounts "github.com/eximchain/go-ethereum/accounts"
 	httptransport "github.com/go-kit/kit/transport/http"
 	vault "github.com/hashicorp/vault/api"
 	awsauth "github.com/hashicorp/vault/builtin/credential/aws"

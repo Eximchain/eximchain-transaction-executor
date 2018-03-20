@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 
+	gethAccounts "github.com/eximchain/go-ethereum/accounts"
 	vault "github.com/hashicorp/vault/api"
 )
 
