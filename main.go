@@ -108,9 +108,9 @@ func main() {
 
 	svc := transactionExecutorService{vaultClient: vaultClient, keystore: gethKeystore, quorumClient: &quorumClient}
 
-	getKeyHandler := httptransport.NewServer(
-		makeGetKeyEndpoint(svc),
-		decodeGetKeyRequest,
+	getVaultKeyHandler := httptransport.NewServer(
+		makeGetVaultKeyEndpoint(svc),
+		decodeGetVaultKeyRequest,
 		encodeResponse,
 	)
 
@@ -120,7 +120,7 @@ func main() {
 		encodeResponse,
 	)
 
-	http.Handle("/get-key", getKeyHandler)
+	http.Handle("/get-vault-key", getVaultKeyHandler)
 	http.Handle("/generate-key", generateKeyHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

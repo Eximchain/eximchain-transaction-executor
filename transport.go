@@ -8,14 +8,14 @@ import (
 	"github.com/go-kit/kit/endpoint"
 )
 
-func makeGetKeyEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+func makeGetVaultKeyEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		//		req := request.(getKeyRequest)
-		v, err := svc.GetKey(ctx)
+		v, err := svc.GetVaultKey(ctx)
 		if err != nil {
-			return getKeyResponse{v, err.Error()}, nil
+			return getVaultKeyResponse{v, err.Error()}, nil
 		}
-		return getKeyResponse{v, ""}, nil
+		return getVaultKeyResponse{v, ""}, nil
 	}
 }
 
@@ -30,8 +30,8 @@ func makeGenerateKeyEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	}
 }
 
-func decodeGetKeyRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	var request getKeyRequest
+func decodeGetVaultKeyRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var request getVaultKeyRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return nil, err
 	}
@@ -50,11 +50,11 @@ func encodeResponse(_ context.Context, w http.ResponseWriter, response interface
 	return json.NewEncoder(w).Encode(response)
 }
 
-type getKeyRequest struct{}
+type getVaultKeyRequest struct{}
 
 type generateKeyRequest struct{}
 
-type getKeyResponse struct {
+type getVaultKeyResponse struct {
 	Key string `json:"key"`
 	Err string `json:"err,omitempty"`
 }

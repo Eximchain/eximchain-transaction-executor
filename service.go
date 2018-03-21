@@ -15,7 +15,7 @@ import (
 
 // Manages vault keys and executes transactions against an eximchain node
 type TransactionExecutorService interface {
-	GetKey(context.Context) (string, error)
+	GetVaultKey(context.Context) (string, error)
 	GenerateKey(context.Context) (string, error)
 }
 
@@ -26,7 +26,8 @@ type transactionExecutorService struct {
 	keystore     *keystore.KeyStore
 }
 
-func (svc transactionExecutorService) GetKey(_ context.Context) (string, error) {
+// Currently proof of concept only
+func (svc transactionExecutorService) GetVaultKey(_ context.Context) (string, error) {
 	pathArg := "keys/singleton"
 	vault := svc.vaultClient.Logical()
 	secret, err := vault.Read(pathArg)
