@@ -9,6 +9,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/eximchain/eth-client/quorum"
 	"github.com/eximchain/go-ethereum/accounts/keystore"
 
 	httptransport "github.com/go-kit/kit/transport/http"
@@ -67,6 +68,7 @@ func LoginAws(v *vault.Client) (string, error) {
 
 func main() {
 	vaultAddressFlag := flag.String("vault-address", "http://127.0.0.1:8200", "The address at which vault can be accessed")
+	quorumAddressFlag := flag.String("quorum-address", "http://127.0.0.1:8545", "The address at which the quorum node can be reached")
 	authTokenFlag := flag.String("auth-token", "", "An auth token to use instead of AWS authorization, for help with testing")
 	keyDirFlag := flag.String("keystore", "/home/ubuntu/.ethereum/keystore", "The directory to use as a keystore")
 	flag.Parse()
@@ -93,10 +95,18 @@ func main() {
 	}
 	vaultClient.SetToken(token)
 
+	// Quorum client setup
+	quorumAddress := *quorumAddressFlag
+	quorumClient, err := quorum.Dial(quorumAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Keystore setup
 	gethKeyDir := *keyDirFlag
 	gethKeystore := keystore.NewKeyStore(gethKeyDir, keystore.StandardScryptN, keystore.StandardScryptP)
 
-	svc := transactionExecutorService{vaultClient: vaultClient, keystore: gethKeystore}
+	svc := transactionExecutorService{vaultClient: vaultClient, keystore: gethKeystore, quorumClient: &quorumClient}
 
 	getKeyHandler := httptransport.NewServer(
 		makeGetKeyEndpoint(svc),

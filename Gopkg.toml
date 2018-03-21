@@ -11,6 +11,10 @@
   branch = "master"
 
 [[constraint]]
+  name = "github.com/eximchain/eth-client"
+  branch = "master"
+
+[[constraint]]
   name = "github.com/hashicorp/vault"
   version = "0.9.5"
 

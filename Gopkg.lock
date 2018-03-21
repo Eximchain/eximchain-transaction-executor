@@ -56,14 +56,24 @@
     "service/iam",
     "service/sts"
   ]
-  revision = "f0872da8a448f8cb10f4f0c95c2100e4f7356448"
-  version = "v1.13.16"
+  revision = "3698d5a02699973b1c9c8731b1c81f83bfcfd72f"
+  version = "v1.13.17"
 
 [[projects]]
   branch = "master"
   name = "github.com/btcsuite/btcd"
   packages = ["btcec"]
   revision = "2be2f12b358dc57d70b8f501b00be450192efbc3"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/eximchain/eth-client"
+  packages = [
+    "client",
+    "log",
+    "quorum"
+  ]
+  revision = "677f11597c0c1effa9ae072b50c28f31ffd038ee"
 
 [[projects]]
   branch = "master"
@@ -78,15 +88,23 @@
     "common/mclock",
     "core/types",
     "crypto",
+    "crypto/ecies",
     "crypto/randentropy",
     "crypto/secp256k1",
     "crypto/sha3",
+    "ethclient",
     "ethdb",
     "event",
     "log",
     "metrics",
+    "p2p",
+    "p2p/discover",
+    "p2p/discv5",
+    "p2p/nat",
+    "p2p/netutil",
     "params",
     "rlp",
+    "rpc",
     "trie"
   ]
   revision = "1f5d195caee426fe680b966389f54a5ae8cfba7c"
@@ -220,7 +238,7 @@
     "json/scanner",
     "json/token"
   ]
-  revision = "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
+  revision = "f40e974e75af4e271d97ce0fc917af5898ae7bda"
 
 [[projects]]
   name = "github.com/hashicorp/vault"
@@ -248,14 +266,40 @@
     "physical/inmem",
     "version"
   ]
-  revision = "36edb4d42380d89a897e7f633046423240b710d9"
-  version = "v0.9.5"
+  revision = "7e1fbde40afee241f81ef08700e7987d86fc7242"
+  version = "v0.9.6"
 
 [[projects]]
   branch = "master"
   name = "github.com/hashicorp/yamux"
   packages = ["."]
   revision = "2658be15c5f05e76244154714161f17e3e77de2e"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/huin/goupnp"
+  packages = [
+    ".",
+    "dcps/internetgateway1",
+    "dcps/internetgateway2",
+    "httpu",
+    "scpd",
+    "soap",
+    "ssdp"
+  ]
+  revision = "167b9766e52022410644dfc64e8aadd57ee36858"
+
+[[projects]]
+  name = "github.com/inconshreveable/log15"
+  packages = ["."]
+  revision = "0decfc6c20d9ca0ad143b0e89dcaa20f810b4fb3"
+  version = "v2.13"
+
+[[projects]]
+  name = "github.com/jackpal/go-nat-pmp"
+  packages = ["."]
+  revision = "c9cfead9f2a36ddf3daa40ba269aa7f4bbba6b62"
+  version = "v1.0.1"
 
 [[projects]]
   name = "github.com/jmespath/go-jmespath"
@@ -335,6 +379,12 @@
   revision = "d152f3ce359a5464dc41e84a8919fc67e55bbbf0"
 
 [[projects]]
+  name = "github.com/rs/cors"
+  packages = ["."]
+  revision = "feef513b9575b32f84bafa580aad89b011259019"
+  version = "v1.3.0"
+
+[[projects]]
   name = "github.com/ryanuber/go-glob"
   packages = ["."]
   revision = "572520ed46dbddaed19ea3d9541bdd0494163693"
@@ -372,19 +422,23 @@
     "pbkdf2",
     "scrypt"
   ]
-  revision = "c3a3ad6d03f7a915c0f7e194b7152974bb73d287"
+  revision = "80db560fac1fb3e6ac81dbc7f8ae4c061f5257bd"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = [
     "context",
+    "html",
+    "html/atom",
+    "html/charset",
     "http2",
     "http2/hpack",
     "idna",
     "internal/timeseries",
     "lex/httplex",
-    "trace"
+    "trace",
+    "websocket"
   ]
   revision = "6078986fec03a1dcc236c34816c71b0e05018fda"
 
@@ -392,19 +446,31 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "7ceb54c8418b8f9cdf0177b511d5cbb06e9fae39"
+  revision = "bb729a57828d76e3050e664d86aa052741ab620f"
 
 [[projects]]
   name = "golang.org/x/text"
   packages = [
     "collate",
     "collate/build",
+    "encoding",
+    "encoding/charmap",
+    "encoding/htmlindex",
+    "encoding/internal",
+    "encoding/internal/identifier",
+    "encoding/japanese",
+    "encoding/korean",
+    "encoding/simplifiedchinese",
+    "encoding/traditionalchinese",
+    "encoding/unicode",
     "internal/colltab",
     "internal/gen",
     "internal/tag",
     "internal/triegen",
     "internal/ucd",
+    "internal/utf8internal",
     "language",
+    "runes",
     "secure/bidirule",
     "transform",
     "unicode/bidi",
@@ -465,9 +531,15 @@
   packages = ["collections/prque"]
   revision = "8dcd6a7f4951f6ff3ee9cbb919a06d8925822e57"
 
+[[projects]]
+  branch = "v2"
+  name = "gopkg.in/natefinch/npipe.v2"
+  packages = ["."]
+  revision = "c1b8fa8bdccecb0b8db834ee0b92fdbcfa606dd6"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4e004520213cac188cfa13daba6f5240a8396df6dd090533b9eb6260aa85e384"
+  inputs-digest = "4fa47a18cf921c3fa2884efeaf8d489d589f53ef8df5c94985b7dc675c718357"
   solver-name = "gps-cdcl"
   solver-version = 1
