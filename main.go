@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/eximchain/eth-client/quorum"
+	"github.com/eximchain/go-ethereum/accounts"
 	"github.com/eximchain/go-ethereum/accounts/keystore"
 
 	httptransport "github.com/go-kit/kit/transport/http"
@@ -106,7 +107,12 @@ func main() {
 	gethKeyDir := *keyDirFlag
 	gethKeystore := keystore.NewKeyStore(gethKeyDir, keystore.StandardScryptN, keystore.StandardScryptP)
 
-	svc := transactionExecutorService{vaultClient: vaultClient, keystore: gethKeystore, quorumClient: quorumClient}
+	svc := transactionExecutorService{
+		vaultClient:  vaultClient,
+		keystore:     gethKeystore,
+		quorumClient: quorumClient,
+		accountCache: make(map[string]accounts.Account),
+	}
 
 	getVaultKeyHandler := httptransport.NewServer(
 		makeGetVaultKeyEndpoint(svc),
