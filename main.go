@@ -106,7 +106,7 @@ func main() {
 	gethKeyDir := *keyDirFlag
 	gethKeystore := keystore.NewKeyStore(gethKeyDir, keystore.StandardScryptN, keystore.StandardScryptP)
 
-	svc := transactionExecutorService{vaultClient: vaultClient, keystore: gethKeystore, quorumClient: &quorumClient}
+	svc := transactionExecutorService{vaultClient: vaultClient, keystore: gethKeystore, quorumClient: quorumClient}
 
 	getVaultKeyHandler := httptransport.NewServer(
 		makeGetVaultKeyEndpoint(svc),
@@ -120,7 +120,14 @@ func main() {
 		encodeResponse,
 	)
 
+	executeTransactionHandler := httptransport.NewServer(
+		makeExecuteTransactionEndpoint(svc),
+		decodeExecuteTransactionRequest,
+		encodeResponse,
+	)
+
 	http.Handle("/get-vault-key", getVaultKeyHandler)
 	http.Handle("/generate-key", generateKeyHandler)
+	http.Handle("/execute-transaction", executeTransactionHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
