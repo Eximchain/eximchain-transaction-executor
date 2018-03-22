@@ -67,6 +67,7 @@ func (svc transactionExecutorService) ExecuteTransaction(ctx context.Context, fr
 	if !present {
 		return ErrAccountMissing
 	}
+	password := ""
 
 	nonce, err := svc.quorumClient.PendingNonceAt(ctx, account.Address)
 	if err != nil {
@@ -81,7 +82,7 @@ func (svc transactionExecutorService) ExecuteTransaction(ctx context.Context, fr
 
 	tx := types.NewTransaction(nonce, ethCommon.HexToAddress(to), amount, gasLimit, gasPrice, data)
 	// Chain ID must be nil for quorum
-	tx, err = svc.keystore.SignTx(account, tx, nil)
+	tx, err = svc.keystore.SignTxWithPassphrase(account, password, tx, nil)
 	if err != nil {
 		log.Println(err)
 		return ErrSigning
