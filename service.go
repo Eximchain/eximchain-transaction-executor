@@ -71,6 +71,7 @@ func (svc transactionExecutorService) ExecuteTransaction(ctx context.Context, fr
 
 	nonce, err := svc.quorumClient.PendingNonceAt(ctx, account.Address)
 	if err != nil {
+		log.Println("Error: PendingNonceAt")
 		log.Println(err)
 		return ErrQuorum
 	}
@@ -84,11 +85,13 @@ func (svc transactionExecutorService) ExecuteTransaction(ctx context.Context, fr
 	// Chain ID must be nil for quorum
 	tx, err = svc.keystore.SignTxWithPassphrase(account, password, tx, nil)
 	if err != nil {
+		log.Println("Error: Signing")
 		log.Println(err)
 		return ErrSigning
 	}
 	err = svc.quorumClient.SendTransaction(ctx, tx)
 	if err != nil {
+		log.Println("Error: SendTransaction")
 		log.Println(err)
 		return ErrQuorum
 	}
