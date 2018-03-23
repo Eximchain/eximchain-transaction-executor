@@ -115,7 +115,8 @@ func (svc transactionExecutorService) GetBalance(ctx context.Context, address st
 	return balance.Int64(), nil
 }
 
-func (svc transactionExecutorService) RunWorkload(ctx context.Context, from string, to string, amount int64, sleepSeconds int, numTransactions int) {
+func (svc transactionExecutorService) RunWorkload(_ context.Context, from string, to string, amount int64, sleepSeconds int, numTransactions int) {
+	ctx := context.Background()
 	go svc.workload(ctx, from, to, amount, sleepSeconds, numTransactions)
 }
 
