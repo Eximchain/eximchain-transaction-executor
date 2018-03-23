@@ -78,7 +78,7 @@ func (svc transactionExecutorService) ExecuteTransaction(ctx context.Context, fr
 	}
 	// TODO: Do something with these parameters
 	amount := big.NewInt(1000000000000000000)
-	gasLimit := uint64(1000000000)
+	gasLimit := uint64(500000)
 	gasPrice := big.NewInt(0)
 	data := make([]byte, 0, 0)
 
