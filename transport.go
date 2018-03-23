@@ -40,6 +40,15 @@ func makeExecuteTransactionEndpoint(svc TransactionExecutorService) endpoint.End
 	}
 }
 
+func makeRunWorkloadEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(runWorkloadRequest)
+		from, to, amount, sleep, num := req.From, req.To, req.Amount, req.Sleep, req.Num
+		svc.RunWorkload(ctx, from, to, amount, sleep, num)
+		return runWorkloadResponse{}, nil
+	}
+}
+
 func makeGetBalanceEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(getBalanceRequest)
@@ -76,6 +85,14 @@ func decodeExecuteTransactionRequest(_ context.Context, r *http.Request) (interf
 	return request, nil
 }
 
+func decodeRunWorkloadRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var request runWorkloadRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		return nil, err
+	}
+	return request, nil
+}
+
 func decodeGetBalanceRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	var request getBalanceRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
@@ -98,6 +115,14 @@ type executeTransactionRequest struct {
 	Amount int64  `json:"amount"`
 }
 
+type runWorkloadRequest struct {
+	From   string `json:"from"`
+	To     string `json:"to"`
+	Amount int64  `json:"amount"`
+	Sleep  int    `json:"sleep"`
+	Num    int    `json:"num"`
+}
+
 type getBalanceRequest struct {
 	Address string `json:"address"`
 }
@@ -115,6 +140,8 @@ type generateKeyResponse struct {
 type executeTransactionResponse struct {
 	Err string `json:"err,omitempty"`
 }
+
+type runWorkloadResponse struct{}
 
 type getBalanceResponse struct {
 	Balance int64  `json:"balance"`

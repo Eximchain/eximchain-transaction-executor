@@ -132,6 +132,12 @@ func main() {
 		encodeResponse,
 	)
 
+	runWorkloadHandler := httptransport.NewServer(
+		makeRunWorkloadEndpoint(svc),
+		decodeRunWorkloadRequest,
+		encodeResponse,
+	)
+
 	getBalanceHandler := httptransport.NewServer(
 		makeGetBalanceEndpoint(svc),
 		decodeGetBalanceRequest,
@@ -141,6 +147,7 @@ func main() {
 	http.Handle("/get-vault-key", getVaultKeyHandler)
 	http.Handle("/generate-key", generateKeyHandler)
 	http.Handle("/execute-transaction", executeTransactionHandler)
+	http.Handle("/run-workload", runWorkloadHandler)
 	http.Handle("/get-balance", getBalanceHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"math/big"
+	"time"
 
 	"github.com/eximchain/eth-client/quorum"
 	"github.com/eximchain/go-ethereum/accounts"
@@ -22,6 +23,7 @@ type TransactionExecutorService interface {
 	GetVaultKey(context.Context) (string, error)
 	GenerateKey(context.Context) (string, error)
 	GetBalance(context.Context, string) (int64, error)
+	RunWorkload(context.Context, string, string, int64, int, int)
 }
 
 // concrete implementation of TransactionExecutorService
@@ -111,6 +113,21 @@ func (svc transactionExecutorService) GetBalance(ctx context.Context, address st
 		return int64(0), ErrQuorum
 	}
 	return balance.Int64(), nil
+}
+
+func (svc transactionExecutorService) RunWorkload(ctx context.Context, from string, to string, amount int64, sleepSeconds int, numTransactions int) {
+	go svc.workload(ctx, from, to, amount, sleepSeconds, numTransactions)
+}
+
+func (svc transactionExecutorService) workload(ctx context.Context, from string, to string, amount int64, sleepSeconds int, numTransactions int) {
+	sleepDuration := time.Duration(sleepSeconds) * time.Second
+	for i := 0; i < numTransactions; i++ {
+		err := svc.ExecuteTransaction(ctx, from, to, amount)
+		if err != nil {
+			log.Printf("Workload Error: %v", err)
+		}
+		time.Sleep(sleepDuration)
+	}
 }
 
 // ErrVault is returned when there is an error accessing vault.
