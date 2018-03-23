@@ -89,7 +89,7 @@ func (svc transactionExecutorService) ExecuteTransaction(ctx context.Context, fr
 		log.Println(err)
 		return ErrSigning
 	}
-	err = svc.quorumClient.SendRawTransaction(ctx, tx)
+	err = svc.quorumClient.SendTransaction(ctx, tx)
 	if err != nil {
 		log.Println("Error: SendTransaction")
 		log.Println(err)
