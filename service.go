@@ -98,31 +98,6 @@ func (svc transactionExecutorService) ExecuteTransaction(ctx context.Context, fr
 	return nil
 }
 
-func (svc *transactionExecutorService) signTx(tx *types.Transaction) (*types.Transaction, error) {
-	// TODO: Something less presumptuous to get the signing account
-	wallets := svc.keystore.Wallets()
-	if len(wallets) == 0 {
-		log.Println("No wallets found")
-		return nil, ErrKeystore
-	}
-	wallet := wallets[0]
-
-	accounts := wallet.Accounts()
-	if len(accounts) == 0 {
-		log.Println("No accounts found")
-		return nil, ErrKeystore
-	}
-	account := accounts[0]
-
-	signedTx, err := svc.keystore.SignTx(account, tx, nil)
-	if err != nil {
-		log.Println(err)
-		return nil, ErrKeystore
-	}
-
-	return signedTx, nil
-}
-
 // ErrVault is returned when there is an error accessing vault.
 var ErrVault = errors.New("error accessing vault")
 
