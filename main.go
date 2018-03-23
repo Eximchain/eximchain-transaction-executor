@@ -132,8 +132,15 @@ func main() {
 		encodeResponse,
 	)
 
+	getBalanceHandler := httptransport.NewServer(
+		makeGetBalanceEndpoint(svc),
+		decodeGetBalanceRequest,
+		encodeResponse,
+	)
+
 	http.Handle("/get-vault-key", getVaultKeyHandler)
 	http.Handle("/generate-key", generateKeyHandler)
 	http.Handle("/execute-transaction", executeTransactionHandler)
+	http.Handle("/get-balance", getBalanceHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

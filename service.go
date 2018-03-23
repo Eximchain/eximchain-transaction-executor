@@ -21,6 +21,7 @@ type TransactionExecutorService interface {
 	ExecuteTransaction(context.Context, string, string) error
 	GetVaultKey(context.Context) (string, error)
 	GenerateKey(context.Context) (string, error)
+	GetBalance(context.Context, string) (uint64, error)
 }
 
 // concrete implementation of TransactionExecutorService
@@ -96,6 +97,21 @@ func (svc transactionExecutorService) ExecuteTransaction(ctx context.Context, fr
 		return ErrQuorum
 	}
 	return nil
+}
+
+func (svc transactionExecutorService) GetBalance(ctx context.Context, address string) (uint64, error) {
+	account, present := svc.accountCache[address]
+	if !present {
+		return uint64(0), ErrAccountMissing
+	}
+	var blockNumber *big.Int
+	blockNumber = nil
+	balance, err := svc.quorumClient.BalanceAt(ctx, account.Address, blockNumber)
+	if err != nil {
+		log.Println(err)
+		return uint64(0), ErrQuorum
+	}
+	return balance.Uint64(), nil
 }
 
 // ErrVault is returned when there is an error accessing vault.

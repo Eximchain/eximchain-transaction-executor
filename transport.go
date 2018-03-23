@@ -40,6 +40,18 @@ func makeExecuteTransactionEndpoint(svc TransactionExecutorService) endpoint.End
 	}
 }
 
+func makeGetBalanceEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(getBalanceRequest)
+		address := req.Address
+		balance, err := svc.GetBalance(ctx, address)
+		if err != nil {
+			return getBalanceResponse{uint64(0), err.Error()}, nil
+		}
+		return getBalanceResponse{balance, ""}, nil
+	}
+}
+
 func decodeGetVaultKeyRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	var request getVaultKeyRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
@@ -64,6 +76,14 @@ func decodeExecuteTransactionRequest(_ context.Context, r *http.Request) (interf
 	return request, nil
 }
 
+func decodeGetBalanceRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var request getBalanceRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		return nil, err
+	}
+	return request, nil
+}
+
 func encodeResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
 	return json.NewEncoder(w).Encode(response)
 }
@@ -75,6 +95,10 @@ type generateKeyRequest struct{}
 type executeTransactionRequest struct {
 	From string `json:"from"`
 	To   string `json:"to"`
+}
+
+type getBalanceRequest struct {
+	Address string `json:"address"`
 }
 
 type getVaultKeyResponse struct {
@@ -89,4 +113,9 @@ type generateKeyResponse struct {
 
 type executeTransactionResponse struct {
 	Err string `json:"err,omitempty"`
+}
+
+type getBalanceResponse struct {
+	Balance uint64 `json:"balance"`
+	Err     string `json:"err,omitempty"`
 }
