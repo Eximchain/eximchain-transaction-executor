@@ -18,10 +18,10 @@ import (
 
 // Manages vault keys and executes transactions against an eximchain node
 type TransactionExecutorService interface {
-	ExecuteTransaction(context.Context, string, string) error
+	ExecuteTransaction(context.Context, string, string, int64) error
 	GetVaultKey(context.Context) (string, error)
 	GenerateKey(context.Context) (string, error)
-	GetBalance(context.Context, string) (uint64, error)
+	GetBalance(context.Context, string) (int64, error)
 }
 
 // concrete implementation of TransactionExecutorService
@@ -62,7 +62,7 @@ func (svc transactionExecutorService) GenerateKey(_ context.Context) (string, er
 	return address, nil
 }
 
-func (svc transactionExecutorService) ExecuteTransaction(ctx context.Context, from string, to string) error {
+func (svc transactionExecutorService) ExecuteTransaction(ctx context.Context, from string, to string, amount int64) error {
 	// TODO: Replace with vault backend
 	account, present := svc.accountCache[from]
 	if !present {
@@ -77,12 +77,11 @@ func (svc transactionExecutorService) ExecuteTransaction(ctx context.Context, fr
 		return ErrQuorum
 	}
 	// TODO: Do something with these parameters
-	amount := big.NewInt(1000000000000000000)
 	gasLimit := uint64(500000)
 	gasPrice := big.NewInt(0)
 	data := make([]byte, 0, 0)
 
-	tx := types.NewTransaction(nonce, ethCommon.HexToAddress(to), amount, gasLimit, gasPrice, data)
+	tx := types.NewTransaction(nonce, ethCommon.HexToAddress(to), big.NewInt(amount), gasLimit, gasPrice, data)
 	// Chain ID must be nil for quorum
 	tx, err = svc.keystore.SignTxWithPassphrase(account, password, tx, nil)
 	if err != nil {
@@ -99,19 +98,19 @@ func (svc transactionExecutorService) ExecuteTransaction(ctx context.Context, fr
 	return nil
 }
 
-func (svc transactionExecutorService) GetBalance(ctx context.Context, address string) (uint64, error) {
+func (svc transactionExecutorService) GetBalance(ctx context.Context, address string) (int64, error) {
 	account, present := svc.accountCache[address]
 	if !present {
-		return uint64(0), ErrAccountMissing
+		return int64(0), ErrAccountMissing
 	}
 	var blockNumber *big.Int
 	blockNumber = nil
 	balance, err := svc.quorumClient.BalanceAt(ctx, account.Address, blockNumber)
 	if err != nil {
 		log.Println(err)
-		return uint64(0), ErrQuorum
+		return int64(0), ErrQuorum
 	}
-	return balance.Uint64(), nil
+	return balance.Int64(), nil
 }
 
 // ErrVault is returned when there is an error accessing vault.

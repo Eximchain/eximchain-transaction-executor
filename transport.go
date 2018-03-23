@@ -31,8 +31,8 @@ func makeGenerateKeyEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 func makeExecuteTransactionEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(executeTransactionRequest)
-		from, to := req.From, req.To
-		err := svc.ExecuteTransaction(ctx, from, to)
+		from, to, amount := req.From, req.To, req.Amount
+		err := svc.ExecuteTransaction(ctx, from, to, amount)
 		if err != nil {
 			return executeTransactionResponse{err.Error()}, nil
 		}
@@ -46,7 +46,7 @@ func makeGetBalanceEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 		address := req.Address
 		balance, err := svc.GetBalance(ctx, address)
 		if err != nil {
-			return getBalanceResponse{uint64(0), err.Error()}, nil
+			return getBalanceResponse{int64(0), err.Error()}, nil
 		}
 		return getBalanceResponse{balance, ""}, nil
 	}
@@ -93,8 +93,9 @@ type getVaultKeyRequest struct{}
 type generateKeyRequest struct{}
 
 type executeTransactionRequest struct {
-	From string `json:"from"`
-	To   string `json:"to"`
+	From   string `json:"from"`
+	To     string `json:"to"`
+	Amount int64  `json:"amount"`
 }
 
 type getBalanceRequest struct {
@@ -116,6 +117,6 @@ type executeTransactionResponse struct {
 }
 
 type getBalanceResponse struct {
-	Balance uint64 `json:"balance"`
+	Balance int64  `json:"balance"`
 	Err     string `json:"err,omitempty"`
 }
