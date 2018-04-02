@@ -325,6 +325,12 @@
   version = "v0.0.3"
 
 [[projects]]
+  name = "github.com/mcuadros/go-defaults"
+  packages = ["."]
+  revision = "ac8540f0fc7e0fb5f1eb9e25c6fd0b8db8f97eed"
+  version = "v1.1.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/mgutz/ansi"
   packages = ["."]
@@ -540,6 +546,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4fa47a18cf921c3fa2884efeaf8d489d589f53ef8df5c94985b7dc675c718357"
+  inputs-digest = "712678e0979649e75bcadcb3ec31487206987a9a6fe2694fd0e8b706b809ea90"
   solver-name = "gps-cdcl"
   solver-version = 1

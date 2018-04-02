@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-kit/kit/endpoint"
+	"github.com/mcuadros/go-defaults"
 )
 
 func makeGetVaultKeyEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
@@ -31,6 +32,7 @@ func makeGenerateKeyEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 func makeExecuteTransactionEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(executeTransactionRequest)
+		defaults.SetDefaults(req)
 		from, to, amount, gasLimit, gasPrice := req.From, req.To, req.Amount, req.GasLimit, req.GasPrice
 		err := svc.ExecuteTransaction(ctx, from, to, amount, gasLimit, gasPrice)
 		if err != nil {
@@ -43,6 +45,7 @@ func makeExecuteTransactionEndpoint(svc TransactionExecutorService) endpoint.End
 func makeRunWorkloadEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(runWorkloadRequest)
+		defaults.SetDefaults(req)
 		from, to, amount, gasLimit, gasPrice, sleep, num := req.From, req.To, req.Amount, req.GasLimit, req.GasPrice, req.Sleep, req.Num
 		svc.RunWorkload(ctx, from, to, amount, gasLimit, gasPrice, sleep, num)
 		return runWorkloadResponse{}, nil
@@ -62,6 +65,7 @@ func makeNodeSyncProgressEndpoint(svc TransactionExecutorService) endpoint.Endpo
 func makeGetBalanceEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(getBalanceRequest)
+		defaults.SetDefaults(req)
 		address := req.Address
 		balance, err := svc.GetBalance(ctx, address)
 		if err != nil {
@@ -139,7 +143,7 @@ type runWorkloadRequest struct {
 	From     string `json:"from"`
 	To       string `json:"to"`
 	Amount   int64  `json:"amount"`
-	GasLimit uint64 `json:"gasLimit"`
+	GasLimit uint64 `json:"gasLimit" default:90000`
 	GasPrice int64  `json:"gasPrice"`
 	Sleep    int    `json:"sleep"`
 	Num      int    `json:"num"`
