@@ -24,6 +24,7 @@ type TransactionExecutorService interface {
 	GenerateKey(context.Context) (string, error)
 	GetBalance(context.Context, string) (int64, error)
 	RunWorkload(context.Context, string, string, int64, int, int)
+	NodeSyncProgress(context.Context) (bool, uint64, uint64, error)
 }
 
 // concrete implementation of TransactionExecutorService
@@ -118,6 +119,22 @@ func (svc transactionExecutorService) GetBalance(ctx context.Context, address st
 func (svc transactionExecutorService) RunWorkload(_ context.Context, from string, to string, amount int64, sleepSeconds int, numTransactions int) {
 	ctx := context.Background()
 	go svc.workload(ctx, from, to, amount, sleepSeconds, numTransactions)
+}
+
+func (svc transactionExecutorService) NodeSyncProgress(ctx context.Context) (bool, uint64, uint64, error) {
+	syncProgress, err := svc.quorumClient.SyncProgress(ctx)
+	if err != nil {
+		log.Println(err)
+		return false, uint64(0), uint64(0), ErrQuorum
+	}
+
+	// Syncing is complete
+	if syncProgress == nil {
+		return false, uint64(0), uint64(0), nil
+	}
+
+	// Syncing still in progress
+	return true, syncProgress.CurrentBlock, syncProgress.HighestBlock, nil
 }
 
 func (svc transactionExecutorService) workload(ctx context.Context, from string, to string, amount int64, sleepSeconds int, numTransactions int) {

@@ -138,6 +138,12 @@ func main() {
 		encodeResponse,
 	)
 
+	nodeSyncProgressHandler := httptransport.NewServer(
+		makeNodeSyncProgressEndpoint(svc),
+		decodeNodeSyncProgressRequest,
+		encodeResponse,
+	)
+
 	getBalanceHandler := httptransport.NewServer(
 		makeGetBalanceEndpoint(svc),
 		decodeGetBalanceRequest,
@@ -148,6 +154,7 @@ func main() {
 	http.Handle("/generate-key", generateKeyHandler)
 	http.Handle("/execute-transaction", executeTransactionHandler)
 	http.Handle("/run-workload", runWorkloadHandler)
+	http.Handle("/node-sync-progress", nodeSyncProgressHandler)
 	http.Handle("/get-balance", getBalanceHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

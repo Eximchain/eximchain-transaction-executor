@@ -49,6 +49,16 @@ func makeRunWorkloadEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	}
 }
 
+func makeNodeSyncProgressEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		syncing, currentBlock, highestBlock, err := svc.NodeSyncProgress(ctx)
+		if err != nil {
+			return nodeSyncProgressResponse{false, uint64(0), uint64(0), err.Error()}, nil
+		}
+		return nodeSyncProgressResponse{syncing, currentBlock, highestBlock, ""}, nil
+	}
+}
+
 func makeGetBalanceEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(getBalanceRequest)
@@ -93,6 +103,14 @@ func decodeRunWorkloadRequest(_ context.Context, r *http.Request) (interface{}, 
 	return request, nil
 }
 
+func decodeNodeSyncProgressRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var request nodeSyncProgressRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		return nil, err
+	}
+	return request, nil
+}
+
 func decodeGetBalanceRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	var request getBalanceRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
@@ -123,6 +141,8 @@ type runWorkloadRequest struct {
 	Num    int    `json:"num"`
 }
 
+type nodeSyncProgressRequest struct{}
+
 type getBalanceRequest struct {
 	Address string `json:"address"`
 }
@@ -142,6 +162,13 @@ type executeTransactionResponse struct {
 }
 
 type runWorkloadResponse struct{}
+
+type nodeSyncProgressResponse struct {
+	Syncing      bool   `json:"syncing"`
+	CurrentBlock uint64 `json:"syncing"`
+	HighestBlock uint64 `json:"syncing"`
+	Err          string `json:"err,omitempty"`
+}
 
 type getBalanceResponse struct {
 	Balance int64  `json:"balance"`
