@@ -19,11 +19,11 @@ import (
 
 // Manages vault keys and executes transactions against an eximchain node
 type TransactionExecutorService interface {
-	ExecuteTransaction(context.Context, string, string, int64, uint64, int64) (string, error)
+	ExecuteTransaction(context.Context, string, string, int64, uint64, int64, string) (string, error)
 	GetVaultKey(context.Context) (string, error)
 	GenerateKey(context.Context) (string, error)
 	GetBalance(context.Context, string) (int64, error)
-	RunWorkload(context.Context, string, string, int64, uint64, int64, int, int)
+	RunWorkload(context.Context, string, string, int64, uint64, int64, string, int, int)
 	NodeSyncProgress(context.Context) (bool, uint64, uint64, error)
 }
 
@@ -65,7 +65,7 @@ func (svc transactionExecutorService) GenerateKey(_ context.Context) (string, er
 	return address, nil
 }
 
-func (svc transactionExecutorService) ExecuteTransaction(ctx context.Context, from string, to string, amount int64, gasLimit uint64, gasPrice int64) (string, error) {
+func (svc transactionExecutorService) ExecuteTransaction(ctx context.Context, from string, to string, amount int64, gasLimit uint64, gasPrice int64, hexData string) (string, error) {
 	// TODO: Replace with vault backend
 	account, present := svc.accountCache[from]
 	if !present {
@@ -79,8 +79,8 @@ func (svc transactionExecutorService) ExecuteTransaction(ctx context.Context, fr
 		log.Println(err)
 		return "", ErrQuorum
 	}
-	// TODO: Do something with these parameters
-	data := make([]byte, 0, 0)
+
+	data := ethCommon.FromHex(hexData)
 
 	tx := types.NewTransaction(nonce, ethCommon.HexToAddress(to), big.NewInt(amount), gasLimit, big.NewInt(gasPrice), data)
 	// Chain ID must be nil for quorum
@@ -115,9 +115,9 @@ func (svc transactionExecutorService) GetBalance(ctx context.Context, address st
 	return balance.Int64(), nil
 }
 
-func (svc transactionExecutorService) RunWorkload(_ context.Context, from string, to string, amount int64, gasLimit uint64, gasPrice int64, sleepSeconds int, numTransactions int) {
+func (svc transactionExecutorService) RunWorkload(_ context.Context, from string, to string, amount int64, gasLimit uint64, gasPrice int64, hexData string, sleepSeconds int, numTransactions int) {
 	ctx := context.Background()
-	go svc.workload(ctx, from, to, amount, gasLimit, gasPrice, sleepSeconds, numTransactions)
+	go svc.workload(ctx, from, to, amount, gasLimit, gasPrice, hexData, sleepSeconds, numTransactions)
 }
 
 func (svc transactionExecutorService) NodeSyncProgress(ctx context.Context) (bool, uint64, uint64, error) {
@@ -136,10 +136,10 @@ func (svc transactionExecutorService) NodeSyncProgress(ctx context.Context) (boo
 	return true, syncProgress.CurrentBlock, syncProgress.HighestBlock, nil
 }
 
-func (svc transactionExecutorService) workload(ctx context.Context, from string, to string, amount int64, gasLimit uint64, gasPrice int64, sleepSeconds int, numTransactions int) {
+func (svc transactionExecutorService) workload(ctx context.Context, from string, to string, amount int64, gasLimit uint64, gasPrice int64, hexData string, sleepSeconds int, numTransactions int) {
 	sleepDuration := time.Duration(sleepSeconds) * time.Second
 	for i := 0; i < numTransactions; i++ {
-		_, err := svc.ExecuteTransaction(ctx, from, to, amount, gasLimit, gasPrice)
+		_, err := svc.ExecuteTransaction(ctx, from, to, amount, gasLimit, gasPrice, hexData)
 		if err != nil {
 			log.Printf("Workload Error: %v", err)
 		}

@@ -33,8 +33,8 @@ func makeExecuteTransactionEndpoint(svc TransactionExecutorService) endpoint.End
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(executeTransactionRequest)
 		defaults.SetDefaults(req)
-		from, to, amount, gasLimit, gasPrice := req.From, req.To, req.Amount, req.GasLimit, req.GasPrice
-		txHash, err := svc.ExecuteTransaction(ctx, from, to, amount, gasLimit, gasPrice)
+		from, to, amount, gasLimit, gasPrice, data := req.From, req.To, req.Amount, req.GasLimit, req.GasPrice, req.Data
+		txHash, err := svc.ExecuteTransaction(ctx, from, to, amount, gasLimit, gasPrice, data)
 		if err != nil {
 			return executeTransactionResponse{"", err.Error()}, nil
 		}
@@ -46,8 +46,8 @@ func makeRunWorkloadEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(runWorkloadRequest)
 		defaults.SetDefaults(req)
-		from, to, amount, gasLimit, gasPrice, sleep, num := req.From, req.To, req.Amount, req.GasLimit, req.GasPrice, req.Sleep, req.Num
-		svc.RunWorkload(ctx, from, to, amount, gasLimit, gasPrice, sleep, num)
+		from, to, amount, gasLimit, gasPrice, data, sleep, num := req.From, req.To, req.Amount, req.GasLimit, req.GasPrice, req.Data, req.Sleep, req.Num
+		svc.RunWorkload(ctx, from, to, amount, gasLimit, gasPrice, data, sleep, num)
 		return runWorkloadResponse{}, nil
 	}
 }
@@ -137,6 +137,7 @@ type executeTransactionRequest struct {
 	Amount   int64  `json:"amount"`
 	GasLimit uint64 `json:"gasLimit"`
 	GasPrice int64  `json:"gasPrice"`
+	Data     string `json:"data" default:"0x"`
 }
 
 type runWorkloadRequest struct {
@@ -145,6 +146,7 @@ type runWorkloadRequest struct {
 	Amount   int64  `json:"amount"`
 	GasLimit uint64 `json:"gasLimit" default:90000`
 	GasPrice int64  `json:"gasPrice"`
+	Data     string `json:"data" default:"0x"`
 	Sleep    int    `json:"sleep"`
 	Num      int    `json:"num"`
 }
