@@ -165,8 +165,8 @@ type runWorkloadResponse struct{}
 
 type nodeSyncProgressResponse struct {
 	Syncing      bool   `json:"syncing"`
-	CurrentBlock uint64 `json:"syncing"`
-	HighestBlock uint64 `json:"syncing"`
+	CurrentBlock uint64 `json:"currentBlock"`
+	HighestBlock uint64 `json:"highestBlock"`
 	Err          string `json:"err,omitempty"`
 }
 
