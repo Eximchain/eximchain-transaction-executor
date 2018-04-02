@@ -19,7 +19,7 @@ import (
 
 // Manages vault keys and executes transactions against an eximchain node
 type TransactionExecutorService interface {
-	ExecuteTransaction(context.Context, string, string, int64, uint64, int64) error
+	ExecuteTransaction(context.Context, string, string, int64, uint64, int64) (string, error)
 	GetVaultKey(context.Context) (string, error)
 	GenerateKey(context.Context) (string, error)
 	GetBalance(context.Context, string) (int64, error)
@@ -65,11 +65,11 @@ func (svc transactionExecutorService) GenerateKey(_ context.Context) (string, er
 	return address, nil
 }
 
-func (svc transactionExecutorService) ExecuteTransaction(ctx context.Context, from string, to string, amount int64, gasLimit uint64, gasPrice int64) error {
+func (svc transactionExecutorService) ExecuteTransaction(ctx context.Context, from string, to string, amount int64, gasLimit uint64, gasPrice int64) (string, error) {
 	// TODO: Replace with vault backend
 	account, present := svc.accountCache[from]
 	if !present {
-		return ErrAccountMissing
+		return "", ErrAccountMissing
 	}
 	password := ""
 
@@ -77,7 +77,7 @@ func (svc transactionExecutorService) ExecuteTransaction(ctx context.Context, fr
 	if err != nil {
 		log.Println("Error: PendingNonceAt")
 		log.Println(err)
-		return ErrQuorum
+		return "", ErrQuorum
 	}
 	// TODO: Do something with these parameters
 	data := make([]byte, 0, 0)
@@ -88,15 +88,16 @@ func (svc transactionExecutorService) ExecuteTransaction(ctx context.Context, fr
 	if err != nil {
 		log.Println("Error: Signing")
 		log.Println(err)
-		return ErrSigning
+		return "", ErrSigning
 	}
 	err = svc.quorumClient.SendTransaction(ctx, tx)
 	if err != nil {
 		log.Println("Error: SendTransaction")
 		log.Println(err)
-		return ErrQuorum
+		return "", ErrQuorum
 	}
-	return nil
+	txHash := tx.Hash().String()
+	return txHash, nil
 }
 
 func (svc transactionExecutorService) GetBalance(ctx context.Context, address string) (int64, error) {
@@ -138,7 +139,7 @@ func (svc transactionExecutorService) NodeSyncProgress(ctx context.Context) (boo
 func (svc transactionExecutorService) workload(ctx context.Context, from string, to string, amount int64, gasLimit uint64, gasPrice int64, sleepSeconds int, numTransactions int) {
 	sleepDuration := time.Duration(sleepSeconds) * time.Second
 	for i := 0; i < numTransactions; i++ {
-		err := svc.ExecuteTransaction(ctx, from, to, amount, gasLimit, gasPrice)
+		_, err := svc.ExecuteTransaction(ctx, from, to, amount, gasLimit, gasPrice)
 		if err != nil {
 			log.Printf("Workload Error: %v", err)
 		}

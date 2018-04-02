@@ -34,11 +34,11 @@ func makeExecuteTransactionEndpoint(svc TransactionExecutorService) endpoint.End
 		req := request.(executeTransactionRequest)
 		defaults.SetDefaults(req)
 		from, to, amount, gasLimit, gasPrice := req.From, req.To, req.Amount, req.GasLimit, req.GasPrice
-		err := svc.ExecuteTransaction(ctx, from, to, amount, gasLimit, gasPrice)
+		txHash, err := svc.ExecuteTransaction(ctx, from, to, amount, gasLimit, gasPrice)
 		if err != nil {
-			return executeTransactionResponse{err.Error()}, nil
+			return executeTransactionResponse{"", err.Error()}, nil
 		}
-		return executeTransactionResponse{""}, nil
+		return executeTransactionResponse{txHash, ""}, nil
 	}
 }
 
@@ -166,7 +166,8 @@ type generateKeyResponse struct {
 }
 
 type executeTransactionResponse struct {
-	Err string `json:"err,omitempty"`
+	TxHash string `json:"txHash"`
+	Err    string `json:"err,omitempty"`
 }
 
 type runWorkloadResponse struct{}
