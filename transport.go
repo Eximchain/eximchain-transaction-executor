@@ -31,8 +31,8 @@ func makeGenerateKeyEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 func makeExecuteTransactionEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(executeTransactionRequest)
-		from, to, amount := req.From, req.To, req.Amount
-		err := svc.ExecuteTransaction(ctx, from, to, amount)
+		from, to, amount, gasLimit, gasPrice := req.From, req.To, req.Amount, req.GasLimit, req.GasPrice
+		err := svc.ExecuteTransaction(ctx, from, to, amount, gasLimit, gasPrice)
 		if err != nil {
 			return executeTransactionResponse{err.Error()}, nil
 		}
@@ -43,8 +43,8 @@ func makeExecuteTransactionEndpoint(svc TransactionExecutorService) endpoint.End
 func makeRunWorkloadEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(runWorkloadRequest)
-		from, to, amount, sleep, num := req.From, req.To, req.Amount, req.Sleep, req.Num
-		svc.RunWorkload(ctx, from, to, amount, sleep, num)
+		from, to, amount, gasLimit, gasPrice, sleep, num := req.From, req.To, req.Amount, req.GasLimit, req.GasPrice, req.Sleep, req.Num
+		svc.RunWorkload(ctx, from, to, amount, gasLimit, gasPrice, sleep, num)
 		return runWorkloadResponse{}, nil
 	}
 }
@@ -128,17 +128,21 @@ type getVaultKeyRequest struct{}
 type generateKeyRequest struct{}
 
 type executeTransactionRequest struct {
-	From   string `json:"from"`
-	To     string `json:"to"`
-	Amount int64  `json:"amount"`
+	From     string `json:"from"`
+	To       string `json:"to"`
+	Amount   int64  `json:"amount"`
+	GasLimit uint64 `json:"gasLimit"`
+	GasPrice int64  `json:"gasPrice"`
 }
 
 type runWorkloadRequest struct {
-	From   string `json:"from"`
-	To     string `json:"to"`
-	Amount int64  `json:"amount"`
-	Sleep  int    `json:"sleep"`
-	Num    int    `json:"num"`
+	From     string `json:"from"`
+	To       string `json:"to"`
+	Amount   int64  `json:"amount"`
+	GasLimit uint64 `json:"gasLimit"`
+	GasPrice int64  `json:"gasPrice"`
+	Sleep    int    `json:"sleep"`
+	Num      int    `json:"num"`
 }
 
 type nodeSyncProgressRequest struct{}
