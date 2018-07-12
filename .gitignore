@@ -1,1 +1,5 @@
 vendor
+eximchain-transaction-executor
+eximchain.db
+c.out
+coverage.html
