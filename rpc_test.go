@@ -10,7 +10,7 @@ import (
 
 func makeRequest(data string) string {
 	svc := transactionExecutorService{}
-	handler := MakeRPCHandler(svc, "http://localhost:7545")
+	handler := MakeRPCHandler(svc, "http://localhost:8545")
 	rpcServer := httptest.NewServer(handler)
 	defer rpcServer.Close()
 

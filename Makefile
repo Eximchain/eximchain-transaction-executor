@@ -2,7 +2,7 @@ all: *.go
 	go build
 
 server: *.go
-	go run common.go auth.go db.go main.go rpc.go server.go service.go transport.go user.go server -auth-token test -quorum-address http://127.0.0.1:7545
+	go run common.go auth.go db.go main.go rpc.go server.go service.go transport.go user.go server -auth-token test -quorum-address http://127.0.0.1:8545
 
 fmt: *.go
 	gofmt -w *.go
