@@ -103,6 +103,12 @@ func MakeRPCHandler(svc transactionExecutorService) *jsonrpc.Server {
 		Encode:   encodeRPCResponse,
 	}
 
+	m["eth_getBalance"] = jsonrpc.EndpointCodec{
+		Endpoint: makeEthGetBalanceEndpoint(svc),
+		Decode:   decodeRPCRequest,
+		Encode:   encodeRPCResponse,
+	}
+
 	m["eth_getStorageAt"] = jsonrpc.EndpointCodec{
 		Endpoint: makeEthGetStorageAtEndpoint(svc),
 		Decode:   decodeRPCRequest,
@@ -147,12 +153,6 @@ func MakeRPCHandler(svc transactionExecutorService) *jsonrpc.Server {
 
 	m["eth_sign"] = jsonrpc.EndpointCodec{
 		Endpoint: makeEthSignEndpoint(svc),
-		Decode:   decodeRPCRequest,
-		Encode:   encodeRPCResponse,
-	}
-
-	m["eth_sendRawTransaction"] = jsonrpc.EndpointCodec{
-		Endpoint: makeEthSendRawTransactionEndpoint(svc),
 		Decode:   decodeRPCRequest,
 		Encode:   encodeRPCResponse,
 	}
@@ -213,30 +213,6 @@ func MakeRPCHandler(svc transactionExecutorService) *jsonrpc.Server {
 
 	m["eth_getUncleByBlockNumberAndIndex"] = jsonrpc.EndpointCodec{
 		Endpoint: makeEthGetUncleByBlockNumberAndIndexEndpoint(svc),
-		Decode:   decodeRPCRequest,
-		Encode:   encodeRPCResponse,
-	}
-
-	m["eth_getCompilers"] = jsonrpc.EndpointCodec{
-		Endpoint: makeEthGetCompilersEndpoint(svc),
-		Decode:   decodeRPCRequest,
-		Encode:   encodeRPCResponse,
-	}
-
-	m["eth_compileLLL"] = jsonrpc.EndpointCodec{
-		Endpoint: makeEthCompileLllEndpoint(svc),
-		Decode:   decodeRPCRequest,
-		Encode:   encodeRPCResponse,
-	}
-
-	m["eth_compileSolidity"] = jsonrpc.EndpointCodec{
-		Endpoint: makeEthCompileSolidityEndpoint(svc),
-		Decode:   decodeRPCRequest,
-		Encode:   encodeRPCResponse,
-	}
-
-	m["eth_compileSerpent"] = jsonrpc.EndpointCodec{
-		Endpoint: makeEthCompileSerpentEndpoint(svc),
 		Decode:   decodeRPCRequest,
 		Encode:   encodeRPCResponse,
 	}

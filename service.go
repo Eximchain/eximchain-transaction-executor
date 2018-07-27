@@ -21,6 +21,13 @@ import (
 
 // Manages vault keys and executes transactions against an eximchain node
 type TransactionExecutorService interface {
+	ExecuteTransaction(context.Context, string, string, int64, uint64, int64, string) (string, error)
+	GetVaultKey(context.Context) (string, error)
+	GenerateKey(context.Context) (string, error)
+	GetBalance(context.Context, string) (int64, error)
+	RunWorkload(context.Context, string, string, int64, uint64, int64, string, int, int)
+	NodeSyncProgress(context.Context) (bool, uint64, uint64, error)
+
 	Web3ClientVersion(context.Context, interface{}) (interface{}, error)
 	Web3Sha3(context.Context, interface{}) (interface{}, error)
 	NetVersion(context.Context, interface{}) (interface{}, error)
@@ -33,6 +40,7 @@ type TransactionExecutorService interface {
 	EthHashrate(context.Context, interface{}) (interface{}, error)
 	EthGasPrice(context.Context, interface{}) (interface{}, error)
 	EthBlockNumber(context.Context, interface{}) (interface{}, error)
+	EthGetBalance(context.Context, interface{}) (interface{}, error)
 	EthGetStorageAt(context.Context, interface{}) (interface{}, error)
 	EthGetTransactionCount(context.Context, interface{}) (interface{}, error)
 	EthGetBlockTransactionCountByHash(context.Context, interface{}) (interface{}, error)
@@ -41,7 +49,6 @@ type TransactionExecutorService interface {
 	EthGetUncleCountByBlockNumber(context.Context, interface{}) (interface{}, error)
 	EthGetCode(context.Context, interface{}) (interface{}, error)
 	EthSign(context.Context, interface{}) (interface{}, error)
-	EthSendRawTransaction(context.Context, interface{}) (interface{}, error)
 	EthCall(context.Context, interface{}) (interface{}, error)
 	EthEstimateGas(context.Context, interface{}) (interface{}, error)
 	EthGetBlockByHash(context.Context, interface{}) (interface{}, error)
@@ -52,10 +59,6 @@ type TransactionExecutorService interface {
 	EthGetTransactionReceipt(context.Context, interface{}) (interface{}, error)
 	EthGetUncleByBlockHashAndIndex(context.Context, interface{}) (interface{}, error)
 	EthGetUncleByBlockNumberAndIndex(context.Context, interface{}) (interface{}, error)
-	EthGetCompilers(context.Context, interface{}) (interface{}, error)
-	EthCompileLll(context.Context, interface{}) (interface{}, error)
-	EthCompileSolidity(context.Context, interface{}) (interface{}, error)
-	EthCompileSerpent(context.Context, interface{}) (interface{}, error)
 	EthNewFilter(context.Context, interface{}) (interface{}, error)
 	EthNewBlockFilter(context.Context, interface{}) (interface{}, error)
 	EthNewPendingTransactionFilter(context.Context, interface{}) (interface{}, error)
@@ -336,6 +339,17 @@ func (svc transactionExecutorService) EthBlockNumber(ctx context.Context, params
 	return res, nil
 }
 
+func (svc transactionExecutorService) EthGetBalance(ctx context.Context, params interface{}) (interface{}, error) {
+	u, _ := url.Parse(svc.quorumAddress)
+	client := jsonrpc.NewClient(u, "eth_getBalance")
+	res, err := client.Endpoint()(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 func (svc transactionExecutorService) EthGetStorageAt(ctx context.Context, params interface{}) (interface{}, error) {
 	u, _ := url.Parse(svc.quorumAddress)
 	client := jsonrpc.NewClient(u, "eth_getStorageAt")
@@ -416,17 +430,6 @@ func (svc transactionExecutorService) EthGetCode(ctx context.Context, params int
 func (svc transactionExecutorService) EthSign(ctx context.Context, params interface{}) (interface{}, error) {
 	u, _ := url.Parse(svc.quorumAddress)
 	client := jsonrpc.NewClient(u, "eth_sign")
-	res, err := client.Endpoint()(ctx, params)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
-}
-
-func (svc transactionExecutorService) EthSendRawTransaction(ctx context.Context, params interface{}) (interface{}, error) {
-	u, _ := url.Parse(svc.quorumAddress)
-	client := jsonrpc.NewClient(u, "eth_sendRawTransaction")
 	res, err := client.Endpoint()(ctx, params)
 	if err != nil {
 		return nil, err
@@ -537,50 +540,6 @@ func (svc transactionExecutorService) EthGetUncleByBlockHashAndIndex(ctx context
 func (svc transactionExecutorService) EthGetUncleByBlockNumberAndIndex(ctx context.Context, params interface{}) (interface{}, error) {
 	u, _ := url.Parse(svc.quorumAddress)
 	client := jsonrpc.NewClient(u, "eth_getUncleByBlockNumberAndIndex")
-	res, err := client.Endpoint()(ctx, params)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
-}
-
-func (svc transactionExecutorService) EthGetCompilers(ctx context.Context, params interface{}) (interface{}, error) {
-	u, _ := url.Parse(svc.quorumAddress)
-	client := jsonrpc.NewClient(u, "eth_getCompilers")
-	res, err := client.Endpoint()(ctx, params)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
-}
-
-func (svc transactionExecutorService) EthCompileLll(ctx context.Context, params interface{}) (interface{}, error) {
-	u, _ := url.Parse(svc.quorumAddress)
-	client := jsonrpc.NewClient(u, "eth_compileLLL")
-	res, err := client.Endpoint()(ctx, params)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
-}
-
-func (svc transactionExecutorService) EthCompileSolidity(ctx context.Context, params interface{}) (interface{}, error) {
-	u, _ := url.Parse(svc.quorumAddress)
-	client := jsonrpc.NewClient(u, "eth_compileSolidity")
-	res, err := client.Endpoint()(ctx, params)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
-}
-
-func (svc transactionExecutorService) EthCompileSerpent(ctx context.Context, params interface{}) (interface{}, error) {
-	u, _ := url.Parse(svc.quorumAddress)
-	client := jsonrpc.NewClient(u, "eth_compileSerpent")
 	res, err := client.Endpoint()(ctx, params)
 	if err != nil {
 		return nil, err

@@ -48,7 +48,6 @@ func (db *BoltDB) Close() error {
 }
 
 func (db *BoltDB) CreateUser(email string) (string, error) {
-	fmt.Println("CreateUser", email)
 	if len(email) == 0 {
 		return "", errors.New("user email is empty")
 	}
