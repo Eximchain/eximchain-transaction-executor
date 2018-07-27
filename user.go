@@ -24,7 +24,7 @@ func RunUserCommand(args []string) {
 	command := UserCommand{email: *emailFlag, delete: *deleteFlag, update: *updateFlag, list: *listFlag}
 
 	db := &BoltDB{}
-	err := db.Open()
+	err := db.Open("eximchain.db")
 	if err != nil {
 		log.Fatal(err)
 	}

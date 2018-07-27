@@ -14,10 +14,10 @@ type BoltDB struct {
 	userBucket []byte
 }
 
-func (db *BoltDB) Open() error {
+func (db *BoltDB) Open(path string) error {
 	var err error
 
-	db.DB, err = bolt.Open("eximchain.db", 0600, nil)
+	db.DB, err = bolt.Open(path, 0600, nil)
 
 	if err != nil {
 		return err
@@ -42,7 +42,13 @@ func (db *BoltDB) Open() error {
 	return nil
 }
 
+func (db *BoltDB) Close() error {
+	err := db.DB.Close()
+	return err
+}
+
 func (db *BoltDB) CreateUser(email string) (string, error) {
+	fmt.Println("CreateUser", email)
 	if len(email) == 0 {
 		return "", errors.New("user email is empty")
 	}

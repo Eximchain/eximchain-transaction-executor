@@ -1,6 +1,6 @@
 vendor
 eximchain-transaction-executor
-eximchain.db
+*.db
 c.out
 coverage.html
 keystore
