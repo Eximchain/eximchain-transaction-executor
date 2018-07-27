@@ -4,20 +4,29 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/eximchain/go-ethereum/accounts"
+	"github.com/eximchain/go-ethereum/accounts/keystore"
 )
 
 type Response struct {
 	Id      string      `json:"id"`
 	JSONRPC string      `json:"jsonrpc"`
 	Result  interface{} `json:"result"`
+	Error   string      `json:"error"`
 }
 
 func makeRequest(data string) Response {
-	svc := transactionExecutorService{}
-	svc.quorumAddress = "http://localhost:7545"
+	svc := transactionExecutorService{
+		keystore:      keystore.NewKeyStore("./keystore", keystore.StandardScryptN, keystore.StandardScryptP),
+		quorumAddress: "http://localhost:8545",
+		accountCache:  make(map[string]accounts.Account),
+	}
+
 	handler := MakeRPCHandler(svc)
 	rpcServer := httptest.NewServer(handler)
 	defer rpcServer.Close()
@@ -27,6 +36,52 @@ func makeRequest(data string) Response {
 	var res Response
 	json.Unmarshal([]byte(body), &res)
 	return res
+}
+
+func NewTestAccount() string {
+	data := `{"jsonrpc":"2.0","method":"personal_newAccount","params":[],"id":1}`
+	res := makeRequest(data)
+
+	return res.Result.(string)
+}
+
+func TestPersonalNewAccount(t *testing.T) {
+	account := NewTestAccount()
+
+	if account == "" {
+		t.Error("personal_newAccount error")
+	}
+}
+
+/*
+func TestEthAccounts(t *testing.T) {
+	data := `{"jsonrpc":"2.0","method":"eth_accounts","params":[],"id":1}`
+	res := makeRequest(data)
+
+	if res.Result == nil {
+		t.Error("eth_accounts error")
+	}
+}
+*/
+
+func TestEthSendTransaction(t *testing.T) {
+	account1 := NewTestAccount()
+	account2 := NewTestAccount()
+
+	data := `{"jsonrpc":"2.0","method":"eth_sendTransaction","params":[{
+  "from": "` + account1 + `",
+  "to": "` + account2 + `",
+  "gas": "0x76c0", 
+  "gasPrice": "0x9184e72a000", 
+  "value": "0x9184e72a"
+}],"id":1}`
+	res := makeRequest(data)
+
+	log.Println(res)
+
+	if res.Result == nil {
+		t.Error("eth_sendTransaction error")
+	}
 }
 
 func TestWeb3ClientVersion(t *testing.T) {
@@ -138,7 +193,8 @@ func TestEthBlockNumber(t *testing.T) {
 }
 
 func TestEthGetBalance(t *testing.T) {
-	data := `{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x9193d626a1A3668AAdeaFF4fda44A3a52A784021","latest"],"id":1}`
+	account := NewTestAccount()
+	data := `{"jsonrpc":"2.0","method":"eth_getBalance","params":["` + account + `","latest"],"id":1}`
 	res := makeRequest(data)
 
 	if res.Result == nil {
@@ -147,7 +203,8 @@ func TestEthGetBalance(t *testing.T) {
 }
 
 func TestEthGetStorageAt(t *testing.T) {
-	data := `{"jsonrpc":"2.0","method":"eth_getStorageAt","params":["0x9193d626a1A3668AAdeaFF4fda44A3a52A784021","0x0","latest"],"id":1}`
+	account := NewTestAccount()
+	data := `{"jsonrpc":"2.0","method":"eth_getStorageAt","params":["` + account + `","0x0","latest"],"id":1}`
 	res := makeRequest(data)
 
 	if res.Result == nil {
@@ -201,7 +258,8 @@ func TestEthGetUncleCountByBlockNumber(t *testing.T) {
 }
 
 func TestEthGetCode(t *testing.T) {
-	data := `{"jsonrpc":"2.0","method":"eth_getCode","params":["0x9193d626a1A3668AAdeaFF4fda44A3a52A784021","latest"],"id":1}`
+	account := NewTestAccount()
+	data := `{"jsonrpc":"2.0","method":"eth_getCode","params":["` + account + `","latest"],"id":1}`
 	res := makeRequest(data)
 
 	if res.Result == nil {
@@ -210,7 +268,8 @@ func TestEthGetCode(t *testing.T) {
 }
 
 func TestEthSign(t *testing.T) {
-	data := `{"jsonrpc":"2.0","method":"eth_sign","params":["0x9193d626a1A3668AAdeaFF4fda44A3a52A784021","0xdeadbeaf"],"id":1}`
+	account := NewTestAccount()
+	data := `{"jsonrpc":"2.0","method":"eth_sign","params":["` + account + `","0xdeadbeaf"],"id":1}`
 	res := makeRequest(data)
 
 	if res.Result == nil {
