@@ -137,8 +137,7 @@ func RunServerCommand(args []string) {
 	}
 
 	mux := http.NewServeMux()
-	// mux.Handle("/rpc", Auth(db, MakeRPCHandler(svc, quorumAddress)))
-	mux.Handle("/rpc", MakeRPCHandler(svc))
+	mux.Handle("/rpc", Auth(db, MakeRPCHandler(svc)))
 
 	http.Handle("/", accessControl(mux))
 

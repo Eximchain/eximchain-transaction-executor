@@ -7,12 +7,6 @@ import (
 func MakeRPCHandler(svc transactionExecutorService) *jsonrpc.Server {
 	m := make(jsonrpc.EndpointCodecMap)
 
-	m["eth_getBalance"] = jsonrpc.EndpointCodec{
-		Endpoint: makeEthGetBalanceEndpoint(svc),
-		Decode:   decodeRPCRequest,
-		Encode:   encodeRPCResponse,
-	}
-
 	m["eth_sendTransaction"] = jsonrpc.EndpointCodec{
 		Endpoint: makeEthSendTransactionEndpoint(svc),
 		Decode:   decodeRPCTransactionRequest,
