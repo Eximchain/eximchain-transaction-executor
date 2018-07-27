@@ -13,7 +13,6 @@ import (
 	"github.com/eximchain/go-ethereum/accounts"
 	"github.com/eximchain/go-ethereum/accounts/keystore"
 
-	httptransport "github.com/go-kit/kit/transport/http"
 	vault "github.com/hashicorp/vault/api"
 	awsauth "github.com/hashicorp/vault/builtin/credential/aws"
 )
@@ -67,6 +66,20 @@ func LoginAws(v *vault.Client) (string, error) {
 	return token, nil
 }
 
+func accessControl(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
+
+		if r.Method == "OPTIONS" {
+			return
+		}
+
+		h.ServeHTTP(w, r)
+	})
+}
+
 func RunServerCommand(args []string) {
 	serverCommand := flag.NewFlagSet("server", flag.ExitOnError)
 	vaultAddressFlag := serverCommand.String("vault-address", "http://127.0.0.1:8200", "The address at which vault can be accessed")
@@ -109,62 +122,25 @@ func RunServerCommand(args []string) {
 	gethKeystore := keystore.NewKeyStore(gethKeyDir, keystore.StandardScryptN, keystore.StandardScryptP)
 
 	svc := transactionExecutorService{
-		vaultClient:  vaultClient,
-		keystore:     gethKeystore,
-		quorumClient: quorumClient,
-		accountCache: make(map[string]accounts.Account),
+		vaultClient:   vaultClient,
+		keystore:      gethKeystore,
+		quorumClient:  quorumClient,
+		quorumAddress: quorumAddress,
+		accountCache:  make(map[string]accounts.Account),
 	}
 
 	db := &BoltDB{}
-	db.Open()
+	db.Open("eximchain.db")
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	getVaultKeyHandler := httptransport.NewServer(
-		makeGetVaultKeyEndpoint(svc),
-		decodeGetVaultKeyRequest,
-		encodeResponse,
-	)
+	mux := http.NewServeMux()
+	// mux.Handle("/rpc", Auth(db, MakeRPCHandler(svc, quorumAddress)))
+	mux.Handle("/rpc", MakeRPCHandler(svc))
 
-	generateKeyHandler := httptransport.NewServer(
-		makeGenerateKeyEndpoint(svc),
-		decodeGenerateKeyRequest,
-		encodeResponse,
-	)
-
-	executeTransactionHandler := httptransport.NewServer(
-		makeExecuteTransactionEndpoint(svc),
-		decodeExecuteTransactionRequest,
-		encodeResponse,
-	)
-
-	runWorkloadHandler := httptransport.NewServer(
-		makeRunWorkloadEndpoint(svc),
-		decodeRunWorkloadRequest,
-		encodeResponse,
-	)
-
-	nodeSyncProgressHandler := httptransport.NewServer(
-		makeNodeSyncProgressEndpoint(svc),
-		decodeNodeSyncProgressRequest,
-		encodeResponse,
-	)
-
-	getBalanceHandler := httptransport.NewServer(
-		makeGetBalanceEndpoint(svc),
-		decodeGetBalanceRequest,
-		encodeResponse,
-	)
-
-	http.Handle("/get-vault-key", Auth(db, getVaultKeyHandler))
-	http.Handle("/generate-key", Auth(db, generateKeyHandler))
-	http.Handle("/execute-transaction", Auth(db, executeTransactionHandler))
-	http.Handle("/run-workload", Auth(db, runWorkloadHandler))
-	http.Handle("/node-sync-progress", Auth(db, nodeSyncProgressHandler))
-	http.Handle("/get-balance", Auth(db, getBalanceHandler))
-	http.Handle("/rpc", Auth(db, MakeRPCHandler(svc, quorumAddress)))
+	http.Handle("/", accessControl(mux))
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

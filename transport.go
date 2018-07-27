@@ -2,186 +2,669 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
-	"net/http"
+	"strconv"
 
+	ethCommon "github.com/eximchain/go-ethereum/common"
+	"github.com/eximchain/go-ethereum/core/types"
 	"github.com/go-kit/kit/endpoint"
-	"github.com/mcuadros/go-defaults"
 )
 
-func makeGetVaultKeyEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+func makeEthGetBalanceEndpoint(svc transactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(RPCParams)
+		address := req[0]
+		balance, err := svc.GetBalance(ctx, address)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return balance, nil
+	}
+}
+
+func makeEthSendTransactionEndpoint(svc transactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(RPCTransactionParams)
+		account, present := svc.accountCache[req[0].From]
+		if !present {
+			return "", ErrAccountMissing
+		}
+
+		password := ""
+		nonce, err := svc.quorumClient.PendingNonceAt(ctx, account.Address)
+		if err != nil {
+			return nil, err
+		}
+
+		to := ethCommon.HexToAddress(req[0].To)
+		amount, _ := HexToBigInt(req[0].Value)
+		gasLimit, _ := strconv.ParseUint(req[0].Gas, 0, 64)
+		gasPrice, _ := HexToBigInt(req[0].GasPrice)
+		data := ethCommon.FromHex(req[0].Data)
+
+		tx := types.NewTransaction(nonce, to, amount, gasLimit, gasPrice, data)
+		tx, err = svc.keystore.SignTxWithPassphrase(account, password, tx, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		err = svc.quorumClient.SendTransaction(ctx, tx)
+		if err != nil {
+			return nil, err
+		}
+
+		txHash := tx.Hash().String()
+		return txHash, nil
+	}
+}
+
+func makePersonalNewAccountEndpoint(svc transactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		password := ""
+		account, err := svc.keystore.NewAccount(password)
+		if err != nil {
+			return nil, err
+		}
+
+		address := "0x" + hex.EncodeToString(account.Address.Bytes())
+		svc.accountCache[address] = account
+		return address, nil
+	}
+}
+
+func makeEthAccountsEndpoint(svc transactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		v, err := svc.GetVaultKey(ctx)
 		if err != nil {
-			return getVaultKeyResponse{v, err.Error()}, nil
+			return nil, err
 		}
-		return getVaultKeyResponse{v, ""}, nil
+
+		return [1]string{v}, nil
 	}
 }
 
-func makeGenerateKeyEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+func makeWeb3ClientVersionEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		v, err := svc.GenerateKey(ctx)
+		res, err := svc.Web3ClientVersion(ctx, request)
+
 		if err != nil {
-			return generateKeyResponse{v, err.Error()}, nil
+			return nil, err
 		}
-		return generateKeyResponse{v, ""}, nil
+
+		return res, nil
 	}
 }
 
-func makeExecuteTransactionEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+func makeWeb3Sha3Endpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(executeTransactionRequest)
-		defaults.SetDefaults(req)
-		from, to, amount, gasLimit, gasPrice, data := req.From, req.To, req.Amount, req.GasLimit, req.GasPrice, req.Data
-		txHash, err := svc.ExecuteTransaction(ctx, from, to, amount, gasLimit, gasPrice, data)
+		res, err := svc.Web3Sha3(ctx, request)
+
 		if err != nil {
-			return executeTransactionResponse{"", err.Error()}, nil
+			return nil, err
 		}
-		return executeTransactionResponse{txHash, ""}, nil
+
+		return res, nil
 	}
 }
 
-func makeRunWorkloadEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+func makeNetVersionEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(runWorkloadRequest)
-		defaults.SetDefaults(req)
-		from, to, amount, gasLimit, gasPrice, data, sleep, num := req.From, req.To, req.Amount, req.GasLimit, req.GasPrice, req.Data, req.Sleep, req.Num
-		svc.RunWorkload(ctx, from, to, amount, gasLimit, gasPrice, data, sleep, num)
-		return runWorkloadResponse{}, nil
-	}
-}
+		res, err := svc.NetVersion(ctx, request)
 
-func makeNodeSyncProgressEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
-	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		syncing, currentBlock, highestBlock, err := svc.NodeSyncProgress(ctx)
 		if err != nil {
-			return nodeSyncProgressResponse{false, uint64(0), uint64(0), err.Error()}, nil
+			return nil, err
 		}
-		return nodeSyncProgressResponse{syncing, currentBlock, highestBlock, ""}, nil
+
+		return res, nil
 	}
 }
 
-func makeGetBalanceEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+func makeNetPeerCountEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(getBalanceRequest)
-		defaults.SetDefaults(req)
-		address := req.Address
-		balance, err := svc.GetBalance(ctx, address)
+		res, err := svc.NetPeerCount(ctx, request)
+
 		if err != nil {
-			return getBalanceResponse{int64(0), err.Error()}, nil
+			return nil, err
 		}
-		return getBalanceResponse{balance, ""}, nil
+
+		return res, nil
 	}
 }
 
-func decodeGetVaultKeyRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	var request getVaultKeyRequest
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+func makeNetListeningEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.NetListening(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthProtocolVersionEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthProtocolVersion(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthSyncingEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthSyncing(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthCoinbaseEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthCoinbase(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthMiningEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthMining(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthHashrateEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthHashrate(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthGasPriceEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthGasPrice(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthBlockNumberEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthBlockNumber(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthGetStorageAtEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthGetStorageAt(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthGetTransactionCountEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthGetTransactionCount(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthGetBlockTransactionCountByHashEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthGetBlockTransactionCountByHash(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthGetBlockTransactionCountByNumberEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthGetBlockTransactionCountByNumber(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthGetUncleCountByBlockHashEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthGetUncleCountByBlockHash(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthGetUncleCountByBlockNumberEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthGetUncleCountByBlockNumber(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthGetCodeEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthGetCode(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthSignEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthSign(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthSendRawTransactionEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthSendRawTransaction(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthCallEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthCall(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthEstimateGasEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthEstimateGas(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthGetBlockByHashEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthGetBlockByHash(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthGetBlockByNumberEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthGetBlockByNumber(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthGetTransactionByHashEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthGetTransactionByHash(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthGetTransactionByBlockHashAndIndexEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthGetTransactionByBlockHashAndIndex(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthGetTransactionByBlockNumberAndIndexEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthGetTransactionByBlockNumberAndIndex(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthGetTransactionReceiptEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthGetTransactionReceipt(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthGetUncleByBlockHashAndIndexEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthGetUncleByBlockHashAndIndex(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthGetUncleByBlockNumberAndIndexEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthGetUncleByBlockNumberAndIndex(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthGetCompilersEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthGetCompilers(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthCompileLllEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthCompileLll(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthCompileSolidityEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthCompileSolidity(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthCompileSerpentEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthCompileSerpent(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthNewFilterEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthNewFilter(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthNewBlockFilterEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthNewBlockFilter(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthNewPendingTransactionFilterEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthNewPendingTransactionFilter(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthUninstallFilterEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthUninstallFilter(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthGetFilterChangesEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthGetFilterChanges(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthGetFilterLogsEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthGetFilterLogs(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthGetLogsEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthGetLogs(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthGetWorkEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthGetWork(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthSubmitWorkEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthSubmitWork(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func makeEthSubmitHashrateEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthSubmitHashrate(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
+func decodeRPCRequest(ctx context.Context, msg json.RawMessage) (interface{}, error) {
+	var req interface{}
+	err := json.Unmarshal(msg, &req)
+	if err != nil {
 		return nil, err
 	}
-	return request, nil
+
+	return req, nil
 }
 
-func decodeGenerateKeyRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	var request generateKeyRequest
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+func encodeRPCResponse(ctx context.Context, result interface{}) (json.RawMessage, error) {
+	b, err := json.Marshal(result)
+	if err != nil {
 		return nil, err
 	}
-	return request, nil
+
+	return b, nil
 }
 
-func decodeExecuteTransactionRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	var request executeTransactionRequest
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+func decodeRPCTransactionRequest(ctx context.Context, msg json.RawMessage) (interface{}, error) {
+	var req RPCTransactionParams
+	err := json.Unmarshal(msg, &req)
+	if err != nil {
 		return nil, err
 	}
-	return request, nil
+
+	return req, nil
 }
 
-func decodeRunWorkloadRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	var request runWorkloadRequest
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		return nil, err
-	}
-	return request, nil
-}
+type RPCParams = []string
 
-func decodeNodeSyncProgressRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	var request nodeSyncProgressRequest
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		return nil, err
-	}
-	return request, nil
-}
+type RPCTransactionParams = []RPCTransaction
 
-func decodeGetBalanceRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	var request getBalanceRequest
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		return nil, err
-	}
-	return request, nil
-}
-
-func encodeResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
-	return json.NewEncoder(w).Encode(response)
-}
-
-type getVaultKeyRequest struct{}
-
-type generateKeyRequest struct{}
-
-type executeTransactionRequest struct {
+type RPCTransaction struct {
 	From     string `json:"from"`
 	To       string `json:"to"`
-	Amount   int64  `json:"amount"`
-	GasLimit uint64 `json:"gasLimit"`
-	GasPrice int64  `json:"gasPrice"`
-	Data     string `json:"data" default:"0x"`
-}
-
-type runWorkloadRequest struct {
-	From     string `json:"from"`
-	To       string `json:"to"`
-	Amount   int64  `json:"amount"`
-	GasLimit uint64 `json:"gasLimit" default:90000`
-	GasPrice int64  `json:"gasPrice"`
-	Data     string `json:"data" default:"0x"`
-	Sleep    int    `json:"sleep"`
-	Num      int    `json:"num"`
-}
-
-type nodeSyncProgressRequest struct{}
-
-type getBalanceRequest struct {
-	Address string `json:"address"`
-}
-
-type getVaultKeyResponse struct {
-	Key string `json:"key"`
-	Err string `json:"err,omitempty"`
-}
-
-type generateKeyResponse struct {
-	Address string `json:"address"`
-	Err     string `json:"err,omitempty"`
-}
-
-type executeTransactionResponse struct {
-	TxHash string `json:"txHash"`
-	Err    string `json:"err,omitempty"`
-}
-
-type runWorkloadResponse struct{}
-
-type nodeSyncProgressResponse struct {
-	Syncing      bool   `json:"syncing"`
-	CurrentBlock uint64 `json:"currentBlock"`
-	HighestBlock uint64 `json:"highestBlock"`
-	Err          string `json:"err,omitempty"`
-}
-
-type getBalanceResponse struct {
-	Balance int64  `json:"balance"`
-	Err     string `json:"err,omitempty"`
+	Gas      string `json:"gas"`
+	GasPrice string `json:"gasPrice"`
+	Value    string `json:"value"`
+	Data     string `json:"data"`
+	Nonce    string `json:"nonce"`
 }
