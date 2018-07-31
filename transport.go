@@ -8,13 +8,20 @@ import (
 	"github.com/go-kit/kit/endpoint"
 )
 
+type Keyfile struct {
+	Address string `json:"address"`
+}
+
 func makeEthAccountsEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		v, err := svc.GetVaultKey(ctx)
 		if err != nil {
 			return nil, err
 		}
-		return v, nil
+
+		var data Keyfile
+		json.Unmarshal([]byte(v), &data)
+		return []string{"0x" + data.Address}, nil
 	}
 }
 
