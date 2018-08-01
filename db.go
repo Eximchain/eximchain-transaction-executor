@@ -2,11 +2,13 @@ package main
 
 import (
 	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"fmt"
-	bolt "github.com/coreos/bbolt"
 	"os"
 	"text/tabwriter"
+
+	bolt "github.com/coreos/bbolt"
 )
 
 type BoltDB struct {
@@ -56,7 +58,12 @@ func (db *BoltDB) CreateUser(email string) (string, error) {
 
 	err := db.DB.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(db.userBucket)
-		token = CreateToken()
+		t, err := CreateToken()
+		if err != nil {
+			return err
+		}
+
+		token = t
 		return b.Put([]byte(token), []byte(email))
 	})
 
@@ -67,10 +74,14 @@ func (db *BoltDB) CreateUser(email string) (string, error) {
 	return token, nil
 }
 
-func CreateToken() string {
-	b := make([]byte, 8)
-	rand.Read(b)
-	return fmt.Sprintf("%x", b)
+func CreateToken() (string, error) {
+	b := make([]byte, 32)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+
+	return base64.URLEncoding.EncodeToString(b), err
 }
 
 func (db *BoltDB) GetUser(token string) (string, error) {
@@ -129,10 +140,10 @@ func (db *BoltDB) ListUsers() {
 }
 
 func (db *BoltDB) DeleteUserByToken(token string) error {
-	key := []byte(token)
-	db.DB.Update(func(tx *bolt.Tx) error {
+	k := []byte(token)
+	err := db.DB.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(db.userBucket)
-		return b.Delete(key)
+		return b.Delete(k)
 	})
-	return nil
+	return err
 }

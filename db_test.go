@@ -15,33 +15,57 @@ func NewTestDB() *BoltDB {
 	return db
 }
 
+func TestCreateToken(t *testing.T) {
+	token, err := CreateToken()
+
+	if err != nil {
+		t.Fatalf("cannot create token: %s", err)
+	}
+
+	if len(token) == 0 {
+		t.Fatalf("cannot create token: %s", token)
+	}
+}
+
 func TestUser(t *testing.T) {
 	db := NewTestDB()
 	defer db.Close()
 
-	token, _ := db.CreateUser("test@example.com")
+	token, err := db.CreateUser("test@example.com")
+	if err != nil {
+		t.Fatalf("cannot create user %s", err)
+	}
 
 	if len(token) == 0 {
-		t.Error("cannot create user")
+		t.Fatalf("cannot create user %s", token)
 	}
 
-	email, _ := db.GetUser(token)
+	email, err := db.GetUser(token)
+	if err != nil {
+		t.Fatalf("cannot get user %s", err)
+	}
 
 	if email != "test@example.com" {
-		t.Error("cannot get user")
+		t.Fatalf("cannot get user %s", email)
 	}
 
-	token1, _ := db.GetTokenByEmail(email)
+	token1, err := db.GetTokenByEmail(email)
+	if err != nil {
+		t.Fatalf("cannot get token by email %s", err)
+	}
 
 	if token1 != token {
-		t.Error("cannot get token by email")
+		t.Fatalf("cannot get token by email %s %s", token1, token)
 	}
 
 	db.DeleteUserByToken(token1)
 
-	email1, _ := db.GetUser(token1)
+	email1, err := db.GetUser(token1)
+	if err != nil {
+		t.Fatalf("cannot get user %s", err)
+	}
 
 	if len(email1) > 0 {
-		t.Error("cannot delete user")
+		t.Fatalf("cannot delete user %s", email1)
 	}
 }
