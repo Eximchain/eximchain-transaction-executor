@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"text/tabwriter"
 
@@ -145,5 +146,10 @@ func (db *BoltDB) DeleteUserByToken(token string) error {
 		b := tx.Bucket(db.userBucket)
 		return b.Delete(k)
 	})
+
+	if err != nil {
+		log.Println("DeleteUserByToken error", err)
+	}
+
 	return err
 }
