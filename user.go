@@ -26,7 +26,7 @@ func RunUserCommand(args []string) {
 	db := &BoltDB{}
 	err := db.Open("eximchain.db")
 	if err != nil {
-		log.Fatal(err)
+		log.Println("open database error", err)
 	}
 
 	if command.list {
@@ -42,13 +42,13 @@ func RunUserCommand(args []string) {
 	if command.delete {
 		token, err := db.GetTokenByEmail(command.email)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 
 		if token != "" {
 			err := db.DeleteUserByToken(token)
 			if err != nil {
-				log.Fatal(err)
+				log.Println(err)
 			}
 
 			fmt.Println(command.email + " deleted")
@@ -60,20 +60,20 @@ func RunUserCommand(args []string) {
 		if token != "" {
 			err = db.DeleteUserByToken(token)
 			if err != nil {
-				log.Fatal(err)
+				log.Println(err)
 			}
 		}
 
 		token, err = db.CreateUser(command.email)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 
 		fmt.Println(command.email, token)
 	} else {
 		token, err := db.GetTokenByEmail(command.email)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 
 		if token == "" {

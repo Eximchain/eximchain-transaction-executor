@@ -76,6 +76,7 @@ func (db *BoltDB) CreateUser(email string) (string, error) {
 	})
 
 	if err != nil {
+		log.Println("CreateUser error", err)
 		return "", err
 	}
 
