@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
+	"path/filepath"
 	"text/tabwriter"
 
 	bolt "github.com/coreos/bbolt"
@@ -17,10 +19,15 @@ type BoltDB struct {
 	userBucket []byte
 }
 
-func (db *BoltDB) Open(path string) error {
+func (db *BoltDB) Open(name string) error {
 	var err error
 
-	db.DB, err = bolt.Open(path, 0600, nil)
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	db.DB, err = bolt.Open(path.Join(dir, name), 0600, nil)
 
 	if err != nil {
 		return err
