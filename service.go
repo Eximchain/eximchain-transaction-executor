@@ -49,6 +49,7 @@ type TransactionExecutorService interface {
 	EthGetUncleCountByBlockNumber(context.Context, interface{}) (interface{}, error)
 	EthGetCode(context.Context, interface{}) (interface{}, error)
 	EthSign(context.Context, interface{}) (interface{}, error)
+	EthSendRawTransaction(context.Context, interface{}) (interface{}, error)
 	EthCall(context.Context, interface{}) (interface{}, error)
 	EthEstimateGas(context.Context, interface{}) (interface{}, error)
 	EthGetBlockByHash(context.Context, interface{}) (interface{}, error)
@@ -114,7 +115,7 @@ func (svc transactionExecutorService) ExecuteTransaction(ctx context.Context, fr
 	// TODO: Replace with vault backend
 	// account, present := svc.accountCache[from]
 	// if !present {
-	// 	return "", ErrAccountMissing
+	//   return "", ErrAccountMissing
 	// }
 
 	accs := svc.keystore.Accounts()
@@ -441,6 +442,17 @@ func (svc transactionExecutorService) EthGetCode(ctx context.Context, params int
 func (svc transactionExecutorService) EthSign(ctx context.Context, params interface{}) (interface{}, error) {
 	u, _ := url.Parse(svc.quorumAddress)
 	client := jsonrpc.NewClient(u, "eth_sign")
+	res, err := client.Endpoint()(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (svc transactionExecutorService) EthSendRawTransaction(ctx context.Context, params interface{}) (interface{}, error) {
+	u, _ := url.Parse(svc.quorumAddress)
+	client := jsonrpc.NewClient(u, "eth_sendRawTransaction")
 	res, err := client.Endpoint()(ctx, params)
 	if err != nil {
 		return nil, err

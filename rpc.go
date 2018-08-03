@@ -151,6 +151,12 @@ func MakeRPCHandler(svc transactionExecutorService) *jsonrpc.Server {
 		Encode:   encodeRPCResponse,
 	}
 
+	m["eth_sendRawTransaction"] = jsonrpc.EndpointCodec{
+		Endpoint: makeEthSendRawTransactionEndpoint(svc),
+		Decode:   decodeRPCRequest,
+		Encode:   encodeRPCResponse,
+	}
+
 	m["eth_call"] = jsonrpc.EndpointCodec{
 		Endpoint: makeEthCallEndpoint(svc),
 		Decode:   decodeRPCRequest,

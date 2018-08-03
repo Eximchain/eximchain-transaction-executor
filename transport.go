@@ -307,6 +307,18 @@ func makeEthSignEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	}
 }
 
+func makeEthSendRawTransactionEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthSendRawTransaction(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
 func makeEthCallEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		res, err := svc.EthCall(ctx, request)
