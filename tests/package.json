@@ -1,0 +1,18 @@
+{
+  "name": "tests",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "Wang Zuo <zuo.wang@enuma.io>",
+  "license": "ISC",
+  "dependencies": {
+    "jest": "^23.4.2",
+    "web3": "^1.0.0-beta.35"
+  },
+  "jest": {
+    "testURL": "http://localhost"
+  }
+}

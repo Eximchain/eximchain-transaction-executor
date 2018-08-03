@@ -112,10 +112,21 @@ func (svc transactionExecutorService) GenerateKey(_ context.Context) (string, er
 
 func (svc transactionExecutorService) ExecuteTransaction(ctx context.Context, from string, to string, amount int64, gasLimit uint64, gasPrice int64, hexData string) (string, error) {
 	// TODO: Replace with vault backend
-	account, present := svc.accountCache[from]
-	if !present {
-		return "", ErrAccountMissing
+	// account, present := svc.accountCache[from]
+	// if !present {
+	// 	return "", ErrAccountMissing
+	// }
+
+	accs := svc.keystore.Accounts()
+	var account accounts.Account
+
+	for _, a := range accs {
+		if ethCommon.HexToAddress(from) == a.Address {
+			account = a
+			break
+		}
 	}
+
 	password := ""
 
 	nonce, err := svc.quorumClient.PendingNonceAt(ctx, account.Address)

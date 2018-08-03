@@ -4,3 +4,5 @@ eximchain-transaction-executor
 c.out
 coverage.html
 keystore
+keystore-local
+node_modules
