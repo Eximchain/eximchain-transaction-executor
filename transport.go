@@ -8,23 +8,6 @@ import (
 	"github.com/go-kit/kit/endpoint"
 )
 
-type Keyfile struct {
-	Address string `json:"address"`
-}
-
-func makeEthAccountsEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
-	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		v, err := svc.GetVaultKey(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		var data Keyfile
-		json.Unmarshal([]byte(v), &data)
-		return []string{"0x" + data.Address}, nil
-	}
-}
-
 func makePersonalNewAccountEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		v, err := svc.GenerateKey(ctx)
@@ -187,6 +170,18 @@ func makeEthGasPriceEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	}
 }
 
+func makeEthAccountsEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		res, err := svc.EthAccounts(ctx, request)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+}
+
 func makeEthBlockNumberEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		res, err := svc.EthBlockNumber(ctx, request)
@@ -297,7 +292,11 @@ func makeEthGetCodeEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 
 func makeEthSignEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthSign(ctx, request)
+		req := request.([]interface{})
+		address := req[0].(string)
+		data := req[1].(string)
+
+		res, err := svc.EthSign(ctx, address, data)
 
 		if err != nil {
 			return nil, err

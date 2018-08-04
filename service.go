@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"encoding/hex"
 	"errors"
 	"log"
@@ -13,6 +14,7 @@ import (
 	"github.com/eximchain/go-ethereum/accounts"
 	"github.com/eximchain/go-ethereum/accounts/keystore"
 	"github.com/eximchain/go-ethereum/core/types"
+	"github.com/eximchain/go-ethereum/crypto"
 	"github.com/go-kit/kit/transport/http/jsonrpc"
 
 	ethCommon "github.com/eximchain/go-ethereum/common"
@@ -39,6 +41,7 @@ type TransactionExecutorService interface {
 	EthMining(context.Context, interface{}) (interface{}, error)
 	EthHashrate(context.Context, interface{}) (interface{}, error)
 	EthGasPrice(context.Context, interface{}) (interface{}, error)
+	EthAccounts(context.Context, interface{}) (interface{}, error)
 	EthBlockNumber(context.Context, interface{}) (interface{}, error)
 	EthGetBalance(context.Context, interface{}) (interface{}, error)
 	EthGetStorageAt(context.Context, interface{}) (interface{}, error)
@@ -48,7 +51,7 @@ type TransactionExecutorService interface {
 	EthGetUncleCountByBlockHash(context.Context, interface{}) (interface{}, error)
 	EthGetUncleCountByBlockNumber(context.Context, interface{}) (interface{}, error)
 	EthGetCode(context.Context, interface{}) (interface{}, error)
-	EthSign(context.Context, interface{}) (interface{}, error)
+	EthSign(context.Context, string, string) (interface{}, error)
 	EthSendRawTransaction(context.Context, interface{}) (interface{}, error)
 	EthCall(context.Context, interface{}) (interface{}, error)
 	EthEstimateGas(context.Context, interface{}) (interface{}, error)
@@ -340,6 +343,17 @@ func (svc transactionExecutorService) EthGasPrice(ctx context.Context, params in
 	return res, nil
 }
 
+func (svc transactionExecutorService) EthAccounts(ctx context.Context, params interface{}) (interface{}, error) {
+	u, _ := url.Parse(svc.quorumAddress)
+	client := jsonrpc.NewClient(u, "eth_accounts")
+	res, err := client.Endpoint()(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 func (svc transactionExecutorService) EthBlockNumber(ctx context.Context, params interface{}) (interface{}, error) {
 	u, _ := url.Parse(svc.quorumAddress)
 	client := jsonrpc.NewClient(u, "eth_blockNumber")
@@ -439,15 +453,31 @@ func (svc transactionExecutorService) EthGetCode(ctx context.Context, params int
 	return res, nil
 }
 
-func (svc transactionExecutorService) EthSign(ctx context.Context, params interface{}) (interface{}, error) {
-	u, _ := url.Parse(svc.quorumAddress)
-	client := jsonrpc.NewClient(u, "eth_sign")
-	res, err := client.Endpoint()(ctx, params)
+func signHash(data []byte) []byte {
+	msg := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(data), data)
+	return crypto.Keccak256([]byte(msg))
+}
+
+func (svc transactionExecutorService) EthSign(ctx context.Context, address, data string) (interface{}, error) {
+	accs := svc.keystore.Accounts()
+	var account accounts.Account
+
+	for _, a := range accs {
+		if ethCommon.HexToAddress(address) == a.Address {
+			account = a
+			break
+		}
+	}
+
+	password := ""
+	signature, err := svc.keystore.SignHashWithPassphrase(account, password, signHash(ethCommon.FromHex(data)))
 	if err != nil {
 		return nil, err
 	}
 
-	return res, nil
+	signature[64] += 27
+
+	return ethCommon.ToHex(signature), nil
 }
 
 func (svc transactionExecutorService) EthSendRawTransaction(ctx context.Context, params interface{}) (interface{}, error) {

@@ -19,12 +19,6 @@ func MakeRPCHandler(svc transactionExecutorService) *jsonrpc.Server {
 		Encode:   encodeRPCResponse,
 	}
 
-	m["eth_accounts"] = jsonrpc.EndpointCodec{
-		Endpoint: makeEthAccountsEndpoint(svc),
-		Decode:   decodeRPCRequest,
-		Encode:   encodeRPCResponse,
-	}
-
 	m["web3_clientVersion"] = jsonrpc.EndpointCodec{
 		Endpoint: makeWeb3ClientVersionEndpoint(svc),
 		Decode:   decodeRPCRequest,
@@ -87,6 +81,12 @@ func MakeRPCHandler(svc transactionExecutorService) *jsonrpc.Server {
 
 	m["eth_gasPrice"] = jsonrpc.EndpointCodec{
 		Endpoint: makeEthGasPriceEndpoint(svc),
+		Decode:   decodeRPCRequest,
+		Encode:   encodeRPCResponse,
+	}
+
+	m["eth_accounts"] = jsonrpc.EndpointCodec{
+		Endpoint: makeEthAccountsEndpoint(svc),
 		Decode:   decodeRPCRequest,
 		Encode:   encodeRPCResponse,
 	}
