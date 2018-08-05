@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"log"
 	"math/big"
 	"net/url"

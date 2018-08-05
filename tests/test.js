@@ -9,18 +9,20 @@ test('net_version', async () => {
 
 test('eth_accounts', async () => {
   const accounts = await w1.eth.getAccounts();
-  const balance = await w1.eth.getBalance(accounts[0]);
+  const b1 = await w1.eth.getBalance(accounts[0]);
+  const b2 = await w2.eth.getBalance(accounts[0]);
 
   expect(accounts[0]).not.toBeNull();
-  expect(balance).not.toBeNull();
+  expect(b1).not.toBeNull();
+  expect(b1).toEqual(b2);
 });
 
 test('personal_newAccount', async () => {
-  const account = await w1.eth.personal.newAccount('');
-  const balance = await w1.eth.getBalance(account);
+  const a = await w1.eth.personal.newAccount('');
+  const b = await w1.eth.getBalance(a);
 
-  expect(account).not.toBeNull();
-  expect(balance).toEqual('0');
+  expect(a).not.toBeNull();
+  expect(b).toEqual('0');
 });
 
 test('eth_sign', async () => {
@@ -33,4 +35,24 @@ test('eth_sign', async () => {
 
   expect(s1).toEqual(s2);
   expect(s1).toEqual(s3);
+});
+
+test('eth_sendTransaction', async () => {
+  const accounts = await w1.eth.getAccounts();
+  const a1 = accounts[0];
+  const a2 = await w1.eth.personal.newAccount('');
+
+  const b2 = await w1.eth.getBalance(a2);
+
+  const receipt = await w1.eth.sendTransaction({
+    from: a1,
+    to: a2,
+    gas: 1000000,
+    value: '1000'
+  });
+
+  const bb2 = await w1.eth.getBalance(a2);
+
+  expect(bb2 - b2).toEqual(1000);
+  expect(receipt).not.toBeNull();
 });
