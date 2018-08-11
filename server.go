@@ -130,16 +130,16 @@ func RunServerCommand(args []string) {
 	}
 
 	db := &BoltDB{}
-	db.Open("eximchain.db")
-
+	err = db.Open("eximchain.db")
 	if err != nil {
 		log.Fatal(err)
 	}
+	listenIPC(db)
 
 	mux := http.NewServeMux()
 	mux.Handle("/rpc", Auth(db, MakeRPCHandler(svc)))
 
 	http.Handle("/", accessControl(mux))
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Println(http.ListenAndServe(":8080", nil))
 }

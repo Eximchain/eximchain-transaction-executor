@@ -5,11 +5,13 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
 	"text/tabwriter"
+	"time"
 
 	bolt "github.com/coreos/bbolt"
 )
@@ -27,8 +29,7 @@ func (db *BoltDB) Open(name string) error {
 		log.Fatal(err)
 	}
 
-	db.DB, err = bolt.Open(path.Join(dir, name), 0600, nil)
-
+	db.DB, err = bolt.Open(path.Join(dir, name), 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return err
 	}
@@ -131,12 +132,12 @@ func (db *BoltDB) GetTokenByEmail(email string) (string, error) {
 	return token, nil
 }
 
-func (db *BoltDB) ListUsers() {
+func (db *BoltDB) ListUsers(out io.Writer) {
 	db.DB.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(db.userBucket)
 		c := b.Cursor()
 
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 4, ' ', 0)
+		w := tabwriter.NewWriter(out, 0, 0, 4, ' ', 0)
 
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 			fmt.Fprintf(w, "%s\t%s\n", v, k)

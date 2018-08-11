@@ -1,10 +1,19 @@
 package main
 
 import (
+	"encoding/gob"
 	"flag"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
+	"net"
+	"os"
+	"os/signal"
+	"syscall"
 )
+
+const executorSocket = "/tmp/executor.sock"
 
 type UserCommand struct {
 	email  string
@@ -13,7 +22,102 @@ type UserCommand struct {
 	list   bool
 }
 
+func ipcServer(db *BoltDB, c net.Conn) {
+	defer c.Close()
+	dec := gob.NewDecoder(c)
+	var args []string
+	err := dec.Decode(&args)
+	if err != nil {
+		log.Println("decode error", err)
+		return
+	}
+	log.Println(args)
+	// Echo the reply to the server and the client
+	writer := io.MultiWriter(c, os.Stdout)
+	runUserCommand(db, writer, args)
+}
+
+func acceptLoop(db *BoltDB, l net.Listener) {
+	// Unix sockets must be unlink()ed before being reused again.
+	// Close() will do unlinking if listener is of type UnixListener.
+	defer l.Close()
+
+	// Handle common process-killing signals so we can gracefully shut down:
+	sigc := make(chan os.Signal, 1)
+	signal.Notify(sigc, os.Interrupt, os.Kill, syscall.SIGTERM)
+	go func() {
+		// Wait for a SIGINT or SIGKILL:
+		<-sigc
+		// Stop listening (and unlink the socket if unix type):
+		l.Close()
+		// And we're done:
+		os.Exit(0)
+	}()
+
+	for {
+		fd, err := l.Accept()
+		if err != nil {
+			log.Println("accept error", err)
+			return
+		}
+
+		go ipcServer(db, fd)
+	}
+}
+
+func listenIPC(db *BoltDB) {
+	l, err := net.Listen("unix", executorSocket)
+	if err != nil {
+		log.Println("listen error", err)
+		return
+	}
+
+	go acceptLoop(db, l)
+}
+
+func sendIPC(args []string) {
+	c, err := net.Dial("unix", executorSocket)
+	if err != nil {
+		log.Println("dial error", err)
+		return
+	}
+	defer c.Close()
+	enc := gob.NewEncoder(c)
+	err = enc.Encode(args)
+	if err != nil {
+		log.Println("encode error", err)
+		return
+	}
+	data, err := ioutil.ReadAll(c)
+	if err != nil {
+		log.Println("read error", err)
+		return
+	}
+	fmt.Print(string(data))
+}
+
+func openUserDB() (*BoltDB, error) {
+	db := &BoltDB{}
+	err := db.Open("eximchain.db")
+	return db, err
+}
+
 func RunUserCommand(args []string) {
+	db, err := openUserDB()
+	if err != nil {
+		// If the open timed out, the server is likely running; send over IPC
+		if err.Error() == "timeout" {
+			sendIPC(args)
+			return
+		}
+		log.Println("open database error", err)
+		return
+	}
+
+	runUserCommand(db, os.Stdout, args)
+}
+
+func runUserCommand(db *BoltDB, out io.Writer, args []string) {
 	userCommand := flag.NewFlagSet("user", flag.ExitOnError)
 	emailFlag := userCommand.String("email", "", "user email")
 	deleteFlag := userCommand.Bool("delete", false, "delete user by email")
@@ -23,19 +127,13 @@ func RunUserCommand(args []string) {
 
 	command := UserCommand{email: *emailFlag, delete: *deleteFlag, update: *updateFlag, list: *listFlag}
 
-	db := &BoltDB{}
-	err := db.Open("eximchain.db")
-	if err != nil {
-		log.Println("open database error", err)
-	}
-
 	if command.list {
-		db.ListUsers()
+		db.ListUsers(out)
 		return
 	}
 
 	if len(command.email) == 0 {
-		fmt.Println("user email is empty")
+		fmt.Fprintln(out, "user email is empty")
 		return
 	}
 
@@ -51,9 +149,9 @@ func RunUserCommand(args []string) {
 				log.Println(err)
 			}
 
-			fmt.Println(command.email + " deleted")
+			fmt.Fprintln(out, command.email+" deleted")
 		} else {
-			fmt.Println("user not found")
+			fmt.Fprintln(out, "user not found")
 		}
 	} else if command.update {
 		token, err := db.GetTokenByEmail(command.email)
@@ -69,7 +167,7 @@ func RunUserCommand(args []string) {
 			log.Println(err)
 		}
 
-		fmt.Println(command.email, token)
+		fmt.Fprintln(out, command.email, token)
 	} else {
 		token, err := db.GetTokenByEmail(command.email)
 		if err != nil {
@@ -77,9 +175,9 @@ func RunUserCommand(args []string) {
 		}
 
 		if token == "" {
-			fmt.Println(command.email + " not found")
+			fmt.Fprintln(out, command.email+" not found")
 		} else {
-			fmt.Println(command.email, token)
+			fmt.Fprintln(out, command.email, token)
 		}
 	}
 }
