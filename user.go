@@ -75,25 +75,25 @@ func listenIPC(db *BoltDB) {
 	go acceptLoop(db, l)
 }
 
-func sendIPC(args []string) {
+func sendIPC(args []string) string {
 	c, err := net.Dial("unix", executorSocket)
 	if err != nil {
 		log.Println("dial error", err)
-		return
+		return ""
 	}
 	defer c.Close()
 	enc := gob.NewEncoder(c)
 	err = enc.Encode(args)
 	if err != nil {
 		log.Println("encode error", err)
-		return
+		return ""
 	}
 	data, err := ioutil.ReadAll(c)
 	if err != nil {
 		log.Println("read error", err)
-		return
+		return ""
 	}
-	fmt.Print(string(data))
+	return string(data)
 }
 
 func openUserDB() (*BoltDB, error) {
@@ -107,7 +107,7 @@ func RunUserCommand(args []string) {
 	if err != nil {
 		// If the open timed out, the server is likely running; send over IPC
 		if err.Error() == "timeout" {
-			sendIPC(args)
+			fmt.Print(sendIPC(args))
 			return
 		}
 		log.Println("open database error", err)
