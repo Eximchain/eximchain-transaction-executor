@@ -16,7 +16,7 @@ import (
 	"github.com/eximchain/go-ethereum/core/types"
 	"github.com/eximchain/go-ethereum/crypto"
 	"github.com/go-kit/kit/transport/http/jsonrpc"
-
+      ethRlp "github.com/eximchain/go-ethereum/rlp"
 	ethCommon "github.com/eximchain/go-ethereum/common"
 	vault "github.com/hashicorp/vault/api"
 )
@@ -52,6 +52,7 @@ type TransactionExecutorService interface {
 	EthGetUncleCountByBlockNumber(context.Context, interface{}) (interface{}, error)
 	EthGetCode(context.Context, interface{}) (interface{}, error)
 	EthSign(context.Context, string, string) (interface{}, error)
+	EthSignTransaction(context.Context, string, string, int64, uint64, int64, string)(interface{}, error)
 	EthSendRawTransaction(context.Context, interface{}) (interface{}, error)
 	EthCall(context.Context, interface{}) (interface{}, error)
 	EthEstimateGas(context.Context, interface{}) (interface{}, error)
@@ -478,6 +479,51 @@ func (svc transactionExecutorService) EthSign(ctx context.Context, address, data
 	signature[64] += 27
 
 	return ethCommon.ToHex(signature), nil
+}
+
+func (svc transactionExecutorService) EthSignTransaction(ctx context.Context, from string, to string, amount int64, gasLimit uint64, gasPrice int64, hexData string)(interface{}, error) {
+	accs := svc.keystore.Accounts()
+	var account accounts.Account
+
+	for _, a := range accs {
+		if ethCommon.HexToAddress(from) == a.Address {
+			account = a
+			break
+		}
+	}
+
+	password := ""
+	nonce, err := svc.quorumClient.PendingNonceAt(ctx, account.Address)
+	if err != nil {
+		log.Println("Error: PendingNonceAt")
+		log.Println(err)
+		return "", ErrQuorum
+	}
+
+	data := ethCommon.FromHex(hexData)
+
+	tx := types.NewTransaction(nonce, ethCommon.HexToAddress(to), big.NewInt(amount), gasLimit, big.NewInt(gasPrice), data)
+
+	// Chain ID must be nil for quorum
+      tx, err = svc.keystore.SignTxWithPassphrase(account, password, tx, nil)
+
+	if err != nil {
+		log.Println("Error: Signing")
+		log.Println(err)
+		return "", ErrSigning
+	}
+
+      rlpData, err := ethRlp.EncodeToBytes(tx)
+
+	if err != nil {
+		log.Println("Error: RLP encoding")
+		log.Println(err)
+		return "", err
+	}
+
+      str := ethCommon.ToHex(rlpData)
+
+      return str, nil
 }
 
 func (svc transactionExecutorService) EthSendRawTransaction(ctx context.Context, params interface{}) (interface{}, error) {

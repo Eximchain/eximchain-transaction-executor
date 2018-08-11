@@ -34,6 +34,7 @@ func makeEthSendTransactionEndpoint(svc transactionExecutorService) endpoint.End
 		if err != nil {
 			return nil, err
 		}
+
 		return txHash, nil
 	}
 }
@@ -303,6 +304,24 @@ func makeEthSignEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 		}
 
 		return res, nil
+	}
+}
+
+
+func makeEthSignTransactionEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(RPCTransactionParams)
+
+            from := req[0].From
+		to := req[0].To
+		amount, _ := strconv.ParseInt(req[0].Value, 0, 64)
+		gasLimit, _ := strconv.ParseUint(req[0].Gas, 0, 64)
+		gasPrice, _ := strconv.ParseInt(req[0].GasPrice, 0, 64)
+		data := req[0].Data
+
+		txHash, err := svc.EthSignTransaction(ctx, from, to, amount, gasLimit, gasPrice, data)
+
+            return txHash, err
 	}
 }
 
