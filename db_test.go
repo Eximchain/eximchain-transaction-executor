@@ -6,7 +6,7 @@ import (
 
 func NewTestDB() *BoltDB {
 	db := &BoltDB{}
-	err := db.Open("eximchain_test.db")
+	err := db.open("eximchain_test.db")
 
 	if err != nil {
 		panic("cannot open db")
@@ -16,7 +16,7 @@ func NewTestDB() *BoltDB {
 }
 
 func TestCreateToken(t *testing.T) {
-	token, err := CreateToken()
+	token, err := createToken()
 
 	if err != nil {
 		t.Fatalf("cannot create token: %s", err)
@@ -29,9 +29,9 @@ func TestCreateToken(t *testing.T) {
 
 func TestUser(t *testing.T) {
 	db := NewTestDB()
-	defer db.Close()
+	defer db.close()
 
-	token, err := db.CreateUser("test@example.com")
+	token, err := db.createUser("test@example.com")
 	if err != nil {
 		t.Fatalf("cannot create user %s", err)
 	}
@@ -40,7 +40,7 @@ func TestUser(t *testing.T) {
 		t.Fatalf("cannot create user %s", token)
 	}
 
-	email, err := db.GetUser(token)
+	email, err := db.getUser(token)
 	if err != nil {
 		t.Fatalf("cannot get user %s", err)
 	}
@@ -49,7 +49,7 @@ func TestUser(t *testing.T) {
 		t.Fatalf("cannot get user %s", email)
 	}
 
-	token1, err := db.GetTokenByEmail(email)
+	token1, err := db.getTokenByEmail(email)
 	if err != nil {
 		t.Fatalf("cannot get token by email %s", err)
 	}
@@ -58,9 +58,9 @@ func TestUser(t *testing.T) {
 		t.Fatalf("cannot get token by email %s %s", token1, token)
 	}
 
-	db.DeleteUserByToken(token1)
+	db.deleteUserByToken(token1)
 
-	email1, err := db.GetUser(token1)
+	email1, err := db.getUser(token1)
 	if err != nil {
 		t.Fatalf("cannot get user %s", err)
 	}

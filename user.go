@@ -45,6 +45,7 @@ func acceptLoop(db *BoltDB, l net.Listener) {
 	for {
 		fd, err := l.Accept()
 		if err != nil {
+			// Listen socket will get closed on clean shutdown; ignore the error
 			if !strings.HasSuffix(err.Error(), "use of closed network connection") {
 				log.Println("accept error", err, reflect.TypeOf(err))
 			}
@@ -89,7 +90,7 @@ func sendIPC(args []string) string {
 
 func openUserDB() (*BoltDB, error) {
 	db := &BoltDB{}
-	err := db.Open("eximchain.db")
+	err := db.open("eximchain.db")
 	return db, err
 }
 
@@ -119,7 +120,7 @@ func runUserCommand(db *BoltDB, out io.Writer, args []string) {
 	command := UserCommand{email: *emailFlag, delete: *deleteFlag, update: *updateFlag, list: *listFlag}
 
 	if command.list {
-		err := db.ListUsers(out)
+		err := db.listUsers(out)
 		if err != nil {
 			log.Println("ListUsers", err)
 		}
@@ -132,13 +133,13 @@ func runUserCommand(db *BoltDB, out io.Writer, args []string) {
 	}
 
 	if command.delete {
-		token, err := db.GetTokenByEmail(command.email)
+		token, err := db.getTokenByEmail(command.email)
 		if err != nil {
 			log.Println("GetTokenByEmail", err)
 		}
 
 		if token != "" {
-			err := db.DeleteUserByToken(token)
+			err := db.deleteUserByToken(token)
 			if err != nil {
 				if err != nil {
 					log.Println("DeleteUserByToken error", err)
@@ -150,22 +151,22 @@ func runUserCommand(db *BoltDB, out io.Writer, args []string) {
 			fmt.Fprintln(out, "user not found")
 		}
 	} else if command.update {
-		token, err := db.GetTokenByEmail(command.email)
+		token, err := db.getTokenByEmail(command.email)
 		if token != "" {
-			err = db.DeleteUserByToken(token)
+			err = db.deleteUserByToken(token)
 			if err != nil {
 				log.Println("DeleteUserByToken error", err)
 			}
 		}
 
-		token, err = db.CreateUser(command.email)
+		token, err = db.createUser(command.email)
 		if err != nil {
 			log.Println("CreateUser", err)
 		}
 
 		fmt.Fprintln(out, command.email, token)
 	} else {
-		token, err := db.GetTokenByEmail(command.email)
+		token, err := db.getTokenByEmail(command.email)
 		if err != nil {
 			log.Println("GetTokenByEmail", err)
 		}

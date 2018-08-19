@@ -21,7 +21,7 @@ type BoltDB struct {
 	userBucket []byte
 }
 
-func (db *BoltDB) Open(name string) error {
+func (db *BoltDB) open(name string) error {
 	var err error
 
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
@@ -49,12 +49,12 @@ func (db *BoltDB) Open(name string) error {
 	return err
 }
 
-func (db *BoltDB) Close() error {
+func (db *BoltDB) close() error {
 	err := db.DB.Close()
 	return err
 }
 
-func (db *BoltDB) CreateUser(email string) (string, error) {
+func (db *BoltDB) createUser(email string) (string, error) {
 	if len(email) == 0 {
 		return "", errors.New("user email is empty")
 	}
@@ -63,7 +63,7 @@ func (db *BoltDB) CreateUser(email string) (string, error) {
 
 	err := db.DB.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(db.userBucket)
-		t, err := CreateToken()
+		t, err := createToken()
 		if err != nil {
 			return err
 		}
@@ -75,7 +75,7 @@ func (db *BoltDB) CreateUser(email string) (string, error) {
 	return token, err
 }
 
-func CreateToken() (string, error) {
+func createToken() (string, error) {
 	b := make([]byte, 32)
 	_, err := rand.Read(b)
 	if err != nil {
@@ -85,7 +85,7 @@ func CreateToken() (string, error) {
 	return base64.URLEncoding.EncodeToString(b), err
 }
 
-func (db *BoltDB) GetUser(token string) (string, error) {
+func (db *BoltDB) getUser(token string) (string, error) {
 	email := ""
 	k := []byte(token)
 
@@ -99,7 +99,7 @@ func (db *BoltDB) GetUser(token string) (string, error) {
 	return email, err
 }
 
-func (db *BoltDB) GetTokenByEmail(email string) (string, error) {
+func (db *BoltDB) getTokenByEmail(email string) (string, error) {
 	token := ""
 
 	err := db.DB.View(func(tx *bolt.Tx) error {
@@ -119,7 +119,7 @@ func (db *BoltDB) GetTokenByEmail(email string) (string, error) {
 	return token, err
 }
 
-func (db *BoltDB) ListUsers(out io.Writer) error {
+func (db *BoltDB) listUsers(out io.Writer) error {
 	err := db.DB.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(db.userBucket)
 		c := b.Cursor()
@@ -138,7 +138,7 @@ func (db *BoltDB) ListUsers(out io.Writer) error {
 	return err
 }
 
-func (db *BoltDB) DeleteUserByToken(token string) error {
+func (db *BoltDB) deleteUserByToken(token string) error {
 	k := []byte(token)
 
 	err := db.DB.Update(func(tx *bolt.Tx) error {

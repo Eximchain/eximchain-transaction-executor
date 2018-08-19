@@ -14,7 +14,7 @@ func Auth(db *BoltDB, next http.Handler) http.Handler {
 			return
 		}
 
-		email, err := db.GetUser(auth)
+		email, err := db.getUser(auth)
 
 		if err != nil {
 			http.Error(w, "no user found", http.StatusUnauthorized)

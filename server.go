@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
@@ -134,11 +135,11 @@ func RunServerCommand(args []string) {
 	}
 
 	db := &BoltDB{}
-	err = db.Open("eximchain.db")
+	err = db.open("eximchain.db")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
+	defer db.close()
 
 	// Listen on unix socket for user management commands
 	listener := listenIPC(db)
@@ -150,8 +151,8 @@ func RunServerCommand(args []string) {
 
 	stopChan := make(chan os.Signal, 1)
 
-	// subscribe to SIGINT signals
-	signal.Notify(stopChan, os.Interrupt)
+	// subscribe to SIGINT and SIGTERM signals
+	signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
 
 	srv := &http.Server{Addr: ":8080"}
 
@@ -159,6 +160,7 @@ func RunServerCommand(args []string) {
 		// service connections
 		if err := srv.ListenAndServe(); err != nil {
 			log.Printf("listen: %s\n", err)
+			// Unblock the main function
 			stopChan <- os.Interrupt
 		}
 	}()
