@@ -46,11 +46,7 @@ func (db *BoltDB) Open(name string) error {
 		return nil
 	})
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (db *BoltDB) Close() error {
@@ -76,12 +72,7 @@ func (db *BoltDB) CreateUser(email string) (string, error) {
 		return b.Put([]byte(token), []byte(email))
 	})
 
-	if err != nil {
-		log.Println("CreateUser error", err)
-		return "", err
-	}
-
-	return token, nil
+	return token, err
 }
 
 func CreateToken() (string, error) {
@@ -105,17 +96,13 @@ func (db *BoltDB) GetUser(token string) (string, error) {
 		return nil
 	})
 
-	if err != nil {
-		return "", err
-	}
-
-	return email, nil
+	return email, err
 }
 
 func (db *BoltDB) GetTokenByEmail(email string) (string, error) {
 	token := ""
 
-	db.DB.View(func(tx *bolt.Tx) error {
+	err := db.DB.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(db.userBucket)
 		c := b.Cursor()
 
@@ -129,11 +116,11 @@ func (db *BoltDB) GetTokenByEmail(email string) (string, error) {
 		return nil
 	})
 
-	return token, nil
+	return token, err
 }
 
-func (db *BoltDB) ListUsers(out io.Writer) {
-	db.DB.View(func(tx *bolt.Tx) error {
+func (db *BoltDB) ListUsers(out io.Writer) error {
+	err := db.DB.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(db.userBucket)
 		c := b.Cursor()
 
@@ -147,18 +134,17 @@ func (db *BoltDB) ListUsers(out io.Writer) {
 
 		return nil
 	})
+
+	return err
 }
 
 func (db *BoltDB) DeleteUserByToken(token string) error {
 	k := []byte(token)
+
 	err := db.DB.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(db.userBucket)
 		return b.Delete(k)
 	})
-
-	if err != nil {
-		log.Println("DeleteUserByToken error", err)
-	}
 
 	return err
 }

@@ -1,11 +1,15 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -134,12 +138,49 @@ func RunServerCommand(args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	listenIPC(db)
+	defer db.Close()
+
+	// Listen on unix socket for user management commands
+	listener := listenIPC(db)
 
 	mux := http.NewServeMux()
 	mux.Handle("/rpc", Auth(db, MakeRPCHandler(svc)))
 
 	http.Handle("/", accessControl(mux))
 
-	log.Println(http.ListenAndServe(":8080", nil))
+	stopChan := make(chan os.Signal, 1)
+
+	// subscribe to SIGINT signals
+	signal.Notify(stopChan, os.Interrupt)
+
+	srv := &http.Server{Addr: ":8080"}
+
+	go func() {
+		// service connections
+		if err := srv.ListenAndServe(); err != nil {
+			log.Printf("listen: %s\n", err)
+			stopChan <- os.Interrupt
+		}
+	}()
+
+	log.Println("Listening on", srv.Addr)
+
+	// wait for SIGINT
+	<-stopChan
+
+	log.Println("Shutting down server...")
+
+	if listener != nil {
+		if err := listener.Close(); err != nil {
+			log.Printf("IPC Close: %s", err)
+		}
+	}
+
+	// shut down gracefully, but wait no longer than 5 seconds before halting
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	srv.Shutdown(ctx)
+
+	log.Println("Server gracefully stopped")
 }

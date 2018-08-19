@@ -30,7 +30,6 @@ func TestHttpAuthXfail(t *testing.T) {
 }
 
 func TestHttpAuth(t *testing.T) {
-
 	// Grab the first user token from the server over IPC
 	args := []string{"--list"}
 	output := sendIPC(args)

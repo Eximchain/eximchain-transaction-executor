@@ -9,8 +9,8 @@ import (
 	"log"
 	"net"
 	"os"
-	"os/signal"
-	"syscall"
+	"reflect"
+	"strings"
 )
 
 const executorSocket = "/tmp/executor.sock"
@@ -42,37 +42,28 @@ func acceptLoop(db *BoltDB, l net.Listener) {
 	// Close() will do unlinking if listener is of type UnixListener.
 	defer l.Close()
 
-	// Handle common process-killing signals so we can gracefully shut down:
-	sigc := make(chan os.Signal, 1)
-	signal.Notify(sigc, os.Interrupt, os.Kill, syscall.SIGTERM)
-	go func() {
-		// Wait for a SIGINT or SIGKILL:
-		<-sigc
-		// Stop listening (and unlink the socket if unix type):
-		l.Close()
-		// And we're done:
-		os.Exit(0)
-	}()
-
 	for {
 		fd, err := l.Accept()
 		if err != nil {
-			log.Println("accept error", err)
+			if !strings.HasSuffix(err.Error(), "use of closed network connection") {
+				log.Println("accept error", err, reflect.TypeOf(err))
+			}
 			return
 		}
 
-		go ipcServer(db, fd)
+		ipcServer(db, fd)
 	}
 }
 
-func listenIPC(db *BoltDB) {
+func listenIPC(db *BoltDB) net.Listener {
 	l, err := net.Listen("unix", executorSocket)
 	if err != nil {
 		log.Println("listen error", err)
-		return
+		return nil
 	}
 
 	go acceptLoop(db, l)
+	return l
 }
 
 func sendIPC(args []string) string {
@@ -128,7 +119,10 @@ func runUserCommand(db *BoltDB, out io.Writer, args []string) {
 	command := UserCommand{email: *emailFlag, delete: *deleteFlag, update: *updateFlag, list: *listFlag}
 
 	if command.list {
-		db.ListUsers(out)
+		err := db.ListUsers(out)
+		if err != nil {
+			log.Println("ListUsers", err)
+		}
 		return
 	}
 
@@ -140,13 +134,15 @@ func runUserCommand(db *BoltDB, out io.Writer, args []string) {
 	if command.delete {
 		token, err := db.GetTokenByEmail(command.email)
 		if err != nil {
-			log.Println(err)
+			log.Println("GetTokenByEmail", err)
 		}
 
 		if token != "" {
 			err := db.DeleteUserByToken(token)
 			if err != nil {
-				log.Println(err)
+				if err != nil {
+					log.Println("DeleteUserByToken error", err)
+				}
 			}
 
 			fmt.Fprintln(out, command.email+" deleted")
@@ -158,20 +154,20 @@ func runUserCommand(db *BoltDB, out io.Writer, args []string) {
 		if token != "" {
 			err = db.DeleteUserByToken(token)
 			if err != nil {
-				log.Println(err)
+				log.Println("DeleteUserByToken error", err)
 			}
 		}
 
 		token, err = db.CreateUser(command.email)
 		if err != nil {
-			log.Println(err)
+			log.Println("CreateUser", err)
 		}
 
 		fmt.Fprintln(out, command.email, token)
 	} else {
 		token, err := db.GetTokenByEmail(command.email)
 		if err != nil {
-			log.Println(err)
+			log.Println("GetTokenByEmail", err)
 		}
 
 		if token == "" {
