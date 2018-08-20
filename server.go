@@ -142,7 +142,13 @@ func RunServerCommand(args []string) {
 	defer db.close()
 
 	// Listen on unix socket for user management commands
-	listener := listenIPC(db)
+	if listener := listenIPC(db); listener != nil {
+		defer func() {
+			if err := listener.Close(); err != nil {
+				log.Printf("IPC Close: %v", err)
+			}
+		}()
+	}
 
 	mux := http.NewServeMux()
 	mux.Handle("/rpc", Auth(db, MakeRPCHandler(svc)))
@@ -171,12 +177,6 @@ func RunServerCommand(args []string) {
 	<-stopChan
 
 	log.Println("Shutting down server...")
-
-	if listener != nil {
-		if err := listener.Close(); err != nil {
-			log.Printf("IPC Close: %s", err)
-		}
-	}
 
 	// shut down gracefully, but wait no longer than 5 seconds before halting
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
