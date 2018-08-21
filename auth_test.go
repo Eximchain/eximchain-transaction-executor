@@ -10,13 +10,16 @@ import (
 func testRpc(t *testing.T, token string) *http.Response {
 	jsonStr := []byte(`{"jsonrpc":"2.0","id":2,"method":"eth_syncing","params":[]}`)
 	req, err := http.NewRequest("POST", "http://localhost:8080/rpc", bytes.NewBuffer(jsonStr))
+	if err != nil {
+		t.Fatalf("NewRequest %v", err)
+	}
 	req.Header.Add("Authorization", token)
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		t.Fatalf("cannot connect %s", err)
+		t.Fatalf("cannot connect %v", err)
 	}
 	return resp
 }
@@ -25,7 +28,7 @@ func TestHttpAuthXfail(t *testing.T) {
 	resp := testRpc(t, "asdf")
 	defer resp.Body.Close()
 	if resp.Status != "401 Unauthorized" {
-		t.Fatalf("response Status: %s, expected 401 Unauthorized", resp.Status)
+		t.Fatalf("response Status: %v, expected 401 Unauthorized", resp.Status)
 	}
 }
 
@@ -43,6 +46,6 @@ func TestHttpAuth(t *testing.T) {
 	resp := testRpc(t, token)
 	defer resp.Body.Close()
 	if resp.Status != "200 OK" {
-		t.Fatalf("response Status: %s, expected 200 OK", resp.Status)
+		t.Fatalf("response Status: %v, expected 200 OK", resp.Status)
 	}
 }

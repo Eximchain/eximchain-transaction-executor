@@ -152,6 +152,10 @@ func runUserCommand(db *BoltDB, out io.Writer, args []string) {
 		}
 	} else if command.update {
 		token, err := db.getTokenByEmail(command.email)
+		if err != nil {
+			log.Println("GetTokenByEmail", err)
+		}
+
 		if token != "" {
 			err = db.deleteUserByToken(token)
 			if err != nil {
