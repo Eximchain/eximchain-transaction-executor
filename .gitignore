@@ -1,1 +1,8 @@
 vendor
+eximchain-transaction-executor
+*.db
+c.out
+coverage.html
+keystore
+keystore-local
+node_modules

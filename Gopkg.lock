@@ -66,6 +66,12 @@
   revision = "2be2f12b358dc57d70b8f501b00be450192efbc3"
 
 [[projects]]
+  name = "github.com/coreos/bbolt"
+  packages = ["."]
+  revision = "583e8937c61f1af6513608ccc75c97b6abdf4ff9"
+  version = "v1.3.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/eximchain/eth-client"
   packages = [
@@ -132,7 +138,8 @@
   packages = [
     "endpoint",
     "log",
-    "transport/http"
+    "transport/http",
+    "transport/http/jsonrpc"
   ]
   revision = "ca4112baa34cb55091301bdc13b1420a122b1b9e"
   version = "v0.7.0"
@@ -273,7 +280,7 @@
   branch = "master"
   name = "github.com/hashicorp/yamux"
   packages = ["."]
-  revision = "2658be15c5f05e76244154714161f17e3e77de2e"
+  revision = "3520598351bb3500a49ae9563f5539666ae0a27c"
 
 [[projects]]
   branch = "master"
@@ -546,6 +553,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "712678e0979649e75bcadcb3ec31487206987a9a6fe2694fd0e8b706b809ea90"
+  inputs-digest = "1453a8d29e5ea6983c20af2625ecf1494a78385aa0c9abcb7da01b57336fec5f"
   solver-name = "gps-cdcl"
   solver-version = 1
