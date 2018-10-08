@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/eximchain/eth-client/quorum"
@@ -40,7 +41,7 @@ func GetRole() (string, error) {
 }
 
 func LoginAws(v *vault.Client) (string, error) {
-	loginData, err := awsauth.GenerateLoginData("", "", "", "")
+	loginData, err := awsauth.GenerateLoginData(credentials.NewStaticCredentials("", "", ""), "")
 	if err != nil {
 		return "", err
 	}
