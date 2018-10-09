@@ -1,14 +1,27 @@
-# server
+# Basic Usage
+
+Basic usage example when running in AWS from [the terraform configuration](https://github.com/Eximchain/terraform-aws-eximchain-tx-executor)
 
 ```sh
-curl -XPOST -H 'Authorization: $TOKEN' -d'{}' localhost:8080/get-vault-key
-curl -XPOST -H 'Authorization: $TOKEN' -d'{}' localhost:8080/generate-key
-curl -XPOST -H 'Authorization: $TOKEN' -d'{}' localhost:8080/node-sync-progress
-curl -XPOST -H 'Authorization: $TOKEN' -d'{"address":"$ADDRESS"}' localhost:8080/get-balance
-curl -XPOST -H 'Authorization: $TOKEN' -d'{"from":"$FROM","to":$TO,"amount":$AMOUNT}' localhost:8080/execute-transaction
+# Create a user
+/opt/transaction-executor/go/bin/eximchain-transaction-executor user -email louis@eximchain.com -update
+
+# Store the token
+TOKEN=<Token from previous command>
+
+# Make an RPC call
+curl -XPOST -H "Authorization: $TOKEN" -d'{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' localhost:8080/rpc
 ```
 
-## user
+# Example Commands
+
+## Server
+
+```sh
+curl -XPOST -H "Authorization: $TOKEN" -d'{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' localhost:8080/rpc
+```
+
+## User
 
 ```sh
 ./eximchain user --email zuo.wang@enuma.io
@@ -17,10 +30,8 @@ curl -XPOST -H 'Authorization: $TOKEN' -d'{"from":"$FROM","to":$TO,"amount":$AMO
 ./eximchain user --email zuo.wang@enuma.io --delete
 ```
 
+## Endpoints
+
 | endpoint            | rpc_method          |
 | ------------------- | ------------------- |
-| get-vault-key       | eth_accounts        |
-| generate-key        | personal_newAccount |
-| node-sync-progress  | eth_syncing         |
-| get-balance         | eth_getBalacne      |
-| execute-transaction | eth_sendTransaction |
+| rpc                 | all                 |
