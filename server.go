@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/eximchain/eth-client/quorum"
@@ -41,7 +42,17 @@ func GetRole() (string, error) {
 }
 
 func LoginAws(v *vault.Client) (string, error) {
-	loginData, err := awsauth.GenerateLoginData(credentials.NewStaticCredentials("", "", ""), "")
+	sess := session.Must(session.NewSession())
+	// Use Environment, EC2 Role Credentials, or Credentials file in that order.
+	awsCreds := credentials.NewChainCredentials(
+		[]credentials.Provider{
+			&credentials.EnvProvider{},
+			&ec2rolecreds.EC2RoleProvider{
+				Client: ec2metadata.New(sess),
+			},
+			&credentials.SharedCredentialsProvider{},
+		})
+	loginData, err := awsauth.GenerateLoginData(awsCreds, "")
 	if err != nil {
 		return "", err
 	}
