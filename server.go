@@ -103,6 +103,7 @@ func RunServerCommand(args []string) {
 	quorumAddressFlag := serverCommand.String("quorum-address", "http://127.0.0.1:8545", "The address at which the quorum node can be reached")
 	authTokenFlag := serverCommand.String("auth-token", "", "An auth token to use instead of AWS authorization, for help with testing")
 	keyDirFlag := serverCommand.String("keystore", "/home/ubuntu/.ethereum/keystore", "The directory to use as a keystore")
+	disableAuthFlag := serverCommand.Bool("disable-auth", false, "Set to disable the authorization token check before serving requests")
 	serverCommand.Parse(args)
 
 	// Vault client setup
@@ -163,7 +164,11 @@ func RunServerCommand(args []string) {
 	}
 
 	mux := http.NewServeMux()
-	mux.Handle("/rpc", Auth(db, MakeRPCHandler(svc)))
+	if *disableAuthFlag {
+		mux.Handle("/rpc", DisableAuth(MakeRPCHandler(svc)))
+	} else {
+		mux.Handle("/rpc", Auth(db, MakeRPCHandler(svc)))
+	}
 
 	http.Handle("/", accessControl(mux))
 
