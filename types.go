@@ -1,10 +1,10 @@
 package main
 
 type jsonRpcRequest struct {
-	JsonRpc string `json:"jsonrpc"`
-	Id      string `json:"id"`
-	Method  string `json:"method"`
-	Params  string `json:"params"`
+	JsonRpc string   `json:"jsonrpc"`
+	Id      string   `json:"id"`
+	Method  string   `json:"method"`
+	Params  []string `json:"params"`
 }
 
 type jsonRpcResponse struct {

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strconv"
 
 	"github.com/go-kit/kit/endpoint"
@@ -197,6 +198,7 @@ func makeEthAccountsEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 
 func makeEthBlockNumberEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		fmt.Println(request)
 		req := request.(jsonRpcRequest)
 		res, err := svc.EthBlockNumber(ctx, req)
 
