@@ -198,9 +198,8 @@ func makeEthAccountsEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 
 func makeEthBlockNumberEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		fmt.Println("makeEthBlockNumberEndpoint request:", request)
+		fmt.Println(request)
 		req := request.(jsonRpcRequest)
-		fmt.Println("makeEthBlockNumberEndpoint req:", req)
 		res, err := svc.EthBlockNumber(ctx, req)
 
 		if err != nil {
@@ -623,13 +622,11 @@ func makeEthSubmitHashrateEndpoint(svc TransactionExecutorService) endpoint.Endp
 
 func decodeRPCRequest(ctx context.Context, msg json.RawMessage) (interface{}, error) {
 	var req interface{}
-	fmt.Println("decodeRPCRequest msg:", msg)
 	err := json.Unmarshal(msg, &req)
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Println("decodeRPCRequest req:", req)
 	return req, nil
 }
 
@@ -639,7 +636,6 @@ func encodeRPCResponse(ctx context.Context, result interface{}) (json.RawMessage
 		return nil, err
 	}
 
-	fmt.Println("encodeRPCRequest b:", b)
 	return b, nil
 }
 
