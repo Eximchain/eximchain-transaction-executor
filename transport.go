@@ -41,7 +41,8 @@ func makeEthSendTransactionEndpoint(svc transactionExecutorService) endpoint.End
 
 func makeWeb3ClientVersionEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.Web3ClientVersion(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.Web3ClientVersion(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -53,7 +54,8 @@ func makeWeb3ClientVersionEndpoint(svc TransactionExecutorService) endpoint.Endp
 
 func makeWeb3Sha3Endpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.Web3Sha3(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.Web3Sha3(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -65,7 +67,8 @@ func makeWeb3Sha3Endpoint(svc TransactionExecutorService) endpoint.Endpoint {
 
 func makeNetVersionEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.NetVersion(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.NetVersion(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -77,7 +80,8 @@ func makeNetVersionEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 
 func makeNetPeerCountEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.NetPeerCount(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.NetPeerCount(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -89,7 +93,8 @@ func makeNetPeerCountEndpoint(svc TransactionExecutorService) endpoint.Endpoint 
 
 func makeNetListeningEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.NetListening(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.NetListening(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -101,7 +106,8 @@ func makeNetListeningEndpoint(svc TransactionExecutorService) endpoint.Endpoint 
 
 func makeEthProtocolVersionEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthProtocolVersion(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthProtocolVersion(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -113,7 +119,8 @@ func makeEthProtocolVersionEndpoint(svc TransactionExecutorService) endpoint.End
 
 func makeEthSyncingEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthSyncing(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthSyncing(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -125,7 +132,8 @@ func makeEthSyncingEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 
 func makeEthCoinbaseEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthCoinbase(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthCoinbase(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -137,7 +145,8 @@ func makeEthCoinbaseEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 
 func makeEthMiningEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthMining(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthMining(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -149,7 +158,8 @@ func makeEthMiningEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 
 func makeEthHashrateEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthHashrate(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthHashrate(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -161,7 +171,8 @@ func makeEthHashrateEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 
 func makeEthGasPriceEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthGasPrice(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthGasPrice(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -173,7 +184,8 @@ func makeEthGasPriceEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 
 func makeEthAccountsEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthAccounts(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthAccounts(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -185,7 +197,8 @@ func makeEthAccountsEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 
 func makeEthBlockNumberEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthBlockNumber(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthBlockNumber(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -197,7 +210,8 @@ func makeEthBlockNumberEndpoint(svc TransactionExecutorService) endpoint.Endpoin
 
 func makeEthGetBalanceEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthGetBalance(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthGetBalance(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -209,7 +223,8 @@ func makeEthGetBalanceEndpoint(svc TransactionExecutorService) endpoint.Endpoint
 
 func makeEthGetStorageAtEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthGetStorageAt(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthGetStorageAt(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -221,7 +236,8 @@ func makeEthGetStorageAtEndpoint(svc TransactionExecutorService) endpoint.Endpoi
 
 func makeEthGetTransactionCountEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthGetTransactionCount(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthGetTransactionCount(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -233,7 +249,8 @@ func makeEthGetTransactionCountEndpoint(svc TransactionExecutorService) endpoint
 
 func makeEthGetBlockTransactionCountByHashEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthGetBlockTransactionCountByHash(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthGetBlockTransactionCountByHash(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -245,7 +262,8 @@ func makeEthGetBlockTransactionCountByHashEndpoint(svc TransactionExecutorServic
 
 func makeEthGetBlockTransactionCountByNumberEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthGetBlockTransactionCountByNumber(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthGetBlockTransactionCountByNumber(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -257,7 +275,8 @@ func makeEthGetBlockTransactionCountByNumberEndpoint(svc TransactionExecutorServ
 
 func makeEthGetUncleCountByBlockHashEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthGetUncleCountByBlockHash(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthGetUncleCountByBlockHash(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -269,7 +288,8 @@ func makeEthGetUncleCountByBlockHashEndpoint(svc TransactionExecutorService) end
 
 func makeEthGetUncleCountByBlockNumberEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthGetUncleCountByBlockNumber(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthGetUncleCountByBlockNumber(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -281,7 +301,8 @@ func makeEthGetUncleCountByBlockNumberEndpoint(svc TransactionExecutorService) e
 
 func makeEthGetCodeEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthGetCode(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthGetCode(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -326,7 +347,8 @@ func makeEthSignTransactionEndpoint(svc TransactionExecutorService) endpoint.End
 
 func makeEthSendRawTransactionEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthSendRawTransaction(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthSendRawTransaction(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -338,7 +360,8 @@ func makeEthSendRawTransactionEndpoint(svc TransactionExecutorService) endpoint.
 
 func makeEthCallEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthCall(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthCall(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -350,7 +373,8 @@ func makeEthCallEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 
 func makeEthEstimateGasEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthEstimateGas(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthEstimateGas(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -362,7 +386,8 @@ func makeEthEstimateGasEndpoint(svc TransactionExecutorService) endpoint.Endpoin
 
 func makeEthGetBlockByHashEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthGetBlockByHash(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthGetBlockByHash(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -374,7 +399,8 @@ func makeEthGetBlockByHashEndpoint(svc TransactionExecutorService) endpoint.Endp
 
 func makeEthGetBlockByNumberEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthGetBlockByNumber(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthGetBlockByNumber(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -386,7 +412,8 @@ func makeEthGetBlockByNumberEndpoint(svc TransactionExecutorService) endpoint.En
 
 func makeEthGetTransactionByHashEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthGetTransactionByHash(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthGetTransactionByHash(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -398,7 +425,8 @@ func makeEthGetTransactionByHashEndpoint(svc TransactionExecutorService) endpoin
 
 func makeEthGetTransactionByBlockHashAndIndexEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthGetTransactionByBlockHashAndIndex(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthGetTransactionByBlockHashAndIndex(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -410,7 +438,8 @@ func makeEthGetTransactionByBlockHashAndIndexEndpoint(svc TransactionExecutorSer
 
 func makeEthGetTransactionByBlockNumberAndIndexEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthGetTransactionByBlockNumberAndIndex(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthGetTransactionByBlockNumberAndIndex(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -422,7 +451,8 @@ func makeEthGetTransactionByBlockNumberAndIndexEndpoint(svc TransactionExecutorS
 
 func makeEthGetTransactionReceiptEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthGetTransactionReceipt(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthGetTransactionReceipt(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -434,7 +464,8 @@ func makeEthGetTransactionReceiptEndpoint(svc TransactionExecutorService) endpoi
 
 func makeEthGetUncleByBlockHashAndIndexEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthGetUncleByBlockHashAndIndex(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthGetUncleByBlockHashAndIndex(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -446,7 +477,8 @@ func makeEthGetUncleByBlockHashAndIndexEndpoint(svc TransactionExecutorService) 
 
 func makeEthGetUncleByBlockNumberAndIndexEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthGetUncleByBlockNumberAndIndex(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthGetUncleByBlockNumberAndIndex(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -458,7 +490,8 @@ func makeEthGetUncleByBlockNumberAndIndexEndpoint(svc TransactionExecutorService
 
 func makeEthNewFilterEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthNewFilter(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthNewFilter(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -470,7 +503,8 @@ func makeEthNewFilterEndpoint(svc TransactionExecutorService) endpoint.Endpoint 
 
 func makeEthNewBlockFilterEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthNewBlockFilter(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthNewBlockFilter(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -482,7 +516,8 @@ func makeEthNewBlockFilterEndpoint(svc TransactionExecutorService) endpoint.Endp
 
 func makeEthNewPendingTransactionFilterEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthNewPendingTransactionFilter(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthNewPendingTransactionFilter(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -494,7 +529,8 @@ func makeEthNewPendingTransactionFilterEndpoint(svc TransactionExecutorService) 
 
 func makeEthUninstallFilterEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthUninstallFilter(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthUninstallFilter(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -506,7 +542,8 @@ func makeEthUninstallFilterEndpoint(svc TransactionExecutorService) endpoint.End
 
 func makeEthGetFilterChangesEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthGetFilterChanges(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthGetFilterChanges(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -518,7 +555,8 @@ func makeEthGetFilterChangesEndpoint(svc TransactionExecutorService) endpoint.En
 
 func makeEthGetFilterLogsEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthGetFilterLogs(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthGetFilterLogs(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -530,7 +568,8 @@ func makeEthGetFilterLogsEndpoint(svc TransactionExecutorService) endpoint.Endpo
 
 func makeEthGetLogsEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthGetLogs(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthGetLogs(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -542,7 +581,8 @@ func makeEthGetLogsEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 
 func makeEthGetWorkEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthGetWork(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthGetWork(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -554,7 +594,8 @@ func makeEthGetWorkEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 
 func makeEthSubmitWorkEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthSubmitWork(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthSubmitWork(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -566,7 +607,8 @@ func makeEthSubmitWorkEndpoint(svc TransactionExecutorService) endpoint.Endpoint
 
 func makeEthSubmitHashrateEndpoint(svc TransactionExecutorService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		res, err := svc.EthSubmitHashrate(ctx, request)
+		req := request.(jsonRpcRequest)
+		res, err := svc.EthSubmitHashrate(ctx, req)
 
 		if err != nil {
 			return nil, err
@@ -603,18 +645,4 @@ func decodeRPCTransactionRequest(ctx context.Context, msg json.RawMessage) (inte
 	}
 
 	return req, nil
-}
-
-type RPCParams = []string
-
-type RPCTransactionParams = []RPCTransaction
-
-type RPCTransaction struct {
-	From     string `json:"from"`
-	To       string `json:"to"`
-	Gas      string `json:"gas"`
-	GasPrice string `json:"gasPrice"`
-	Value    string `json:"value"`
-	Data     string `json:"data"`
-	Nonce    string `json:"nonce"`
 }
