@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -22,6 +21,7 @@ import (
 
 	vault "github.com/hashicorp/vault/api"
 	awsauth "github.com/hashicorp/vault/builtin/credential/aws"
+	log "github.com/sirupsen/logrus"
 )
 
 // Expects to be running in EC2
@@ -105,6 +105,10 @@ func RunServerCommand(args []string) {
 	keyDirFlag := serverCommand.String("keystore", "/home/ubuntu/.ethereum/keystore", "The directory to use as a keystore")
 	disableAuthFlag := serverCommand.Bool("disable-auth", false, "Set to disable the authorization token check before serving requests")
 	serverCommand.Parse(args)
+
+	// Log Setup
+	// TODO: Add verbosity setting on command line
+	log.SetLevel(log.InfoLevel)
 
 	// Vault client setup
 	vaultCFG := vault.DefaultConfig()
