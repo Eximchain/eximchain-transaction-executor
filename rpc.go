@@ -4,20 +4,21 @@ import (
 	"github.com/go-kit/kit/transport/http/jsonrpc"
 )
 
+// Methods that shouldn't be publicly available are commented out on this branch
 func MakeRPCHandler(svc transactionExecutorService) *jsonrpc.Server {
 	m := make(jsonrpc.EndpointCodecMap)
 
-	m["eth_sendTransaction"] = jsonrpc.EndpointCodec{
-		Endpoint: makeEthSendTransactionEndpoint(svc),
-		Decode:   decodeRPCTransactionRequest,
-		Encode:   encodeRPCResponse,
-	}
+	//	m["eth_sendTransaction"] = jsonrpc.EndpointCodec{
+	//		Endpoint: makeEthSendTransactionEndpoint(svc),
+	//		Decode:   decodeRPCTransactionRequest,
+	//		Encode:   encodeRPCResponse,
+	//	}
 
-	m["personal_newAccount"] = jsonrpc.EndpointCodec{
-		Endpoint: makePersonalNewAccountEndpoint(svc),
-		Decode:   decodeRPCRequest,
-		Encode:   encodeRPCResponse,
-	}
+	//	m["personal_newAccount"] = jsonrpc.EndpointCodec{
+	//		Endpoint: makePersonalNewAccountEndpoint(svc),
+	//		Decode:   decodeRPCRequest,
+	//		Encode:   encodeRPCResponse,
+	//	}
 
 	m["web3_clientVersion"] = jsonrpc.EndpointCodec{
 		Endpoint: makeWeb3ClientVersionEndpoint(svc),
@@ -37,11 +38,11 @@ func MakeRPCHandler(svc transactionExecutorService) *jsonrpc.Server {
 		Encode:   encodeRPCResponse,
 	}
 
-	m["net_peerCount"] = jsonrpc.EndpointCodec{
-		Endpoint: makeNetPeerCountEndpoint(svc),
-		Decode:   decodeRPCRequest,
-		Encode:   encodeRPCResponse,
-	}
+	//	m["net_peerCount"] = jsonrpc.EndpointCodec{
+	//		Endpoint: makeNetPeerCountEndpoint(svc),
+	//		Decode:   decodeRPCRequest,
+	//		Encode:   encodeRPCResponse,
+	//	}
 
 	m["net_listening"] = jsonrpc.EndpointCodec{
 		Endpoint: makeNetListeningEndpoint(svc),
@@ -55,29 +56,29 @@ func MakeRPCHandler(svc transactionExecutorService) *jsonrpc.Server {
 		Encode:   encodeRPCResponse,
 	}
 
-	m["eth_syncing"] = jsonrpc.EndpointCodec{
-		Endpoint: makeEthSyncingEndpoint(svc),
-		Decode:   decodeRPCRequest,
-		Encode:   encodeRPCResponse,
-	}
+	//	m["eth_syncing"] = jsonrpc.EndpointCodec{
+	//		Endpoint: makeEthSyncingEndpoint(svc),
+	//		Decode:   decodeRPCRequest,
+	//		Encode:   encodeRPCResponse,
+	//	}
 
-	m["eth_coinbase"] = jsonrpc.EndpointCodec{
-		Endpoint: makeEthCoinbaseEndpoint(svc),
-		Decode:   decodeRPCRequest,
-		Encode:   encodeRPCResponse,
-	}
+	//	m["eth_coinbase"] = jsonrpc.EndpointCodec{
+	//		Endpoint: makeEthCoinbaseEndpoint(svc),
+	//		Decode:   decodeRPCRequest,
+	//		Encode:   encodeRPCResponse,
+	//	}
 
-	m["eth_mining"] = jsonrpc.EndpointCodec{
-		Endpoint: makeEthMiningEndpoint(svc),
-		Decode:   decodeRPCRequest,
-		Encode:   encodeRPCResponse,
-	}
+	//	m["eth_mining"] = jsonrpc.EndpointCodec{
+	//		Endpoint: makeEthMiningEndpoint(svc),
+	//		Decode:   decodeRPCRequest,
+	//		Encode:   encodeRPCResponse,
+	//	}
 
-	m["eth_hashrate"] = jsonrpc.EndpointCodec{
-		Endpoint: makeEthHashrateEndpoint(svc),
-		Decode:   decodeRPCRequest,
-		Encode:   encodeRPCResponse,
-	}
+	//	m["eth_hashrate"] = jsonrpc.EndpointCodec{
+	//		Endpoint: makeEthHashrateEndpoint(svc),
+	//		Decode:   decodeRPCRequest,
+	//		Encode:   encodeRPCResponse,
+	//	}
 
 	m["eth_gasPrice"] = jsonrpc.EndpointCodec{
 		Endpoint: makeEthGasPriceEndpoint(svc),
@@ -85,11 +86,11 @@ func MakeRPCHandler(svc transactionExecutorService) *jsonrpc.Server {
 		Encode:   encodeRPCResponse,
 	}
 
-	m["eth_accounts"] = jsonrpc.EndpointCodec{
-		Endpoint: makeEthAccountsEndpoint(svc),
-		Decode:   decodeRPCRequest,
-		Encode:   encodeRPCResponse,
-	}
+	//	m["eth_accounts"] = jsonrpc.EndpointCodec{
+	//		Endpoint: makeEthAccountsEndpoint(svc),
+	//		Decode:   decodeRPCRequest,
+	//		Encode:   encodeRPCResponse,
+	//	}
 
 	m["eth_blockNumber"] = jsonrpc.EndpointCodec{
 		Endpoint: makeEthBlockNumberEndpoint(svc),
@@ -145,17 +146,17 @@ func MakeRPCHandler(svc transactionExecutorService) *jsonrpc.Server {
 		Encode:   encodeRPCResponse,
 	}
 
-	m["eth_sign"] = jsonrpc.EndpointCodec{
-		Endpoint: makeEthSignEndpoint(svc),
-		Decode:   decodeRPCRequest,
-		Encode:   encodeRPCResponse,
-	}
+	//	m["eth_sign"] = jsonrpc.EndpointCodec{
+	//		Endpoint: makeEthSignEndpoint(svc),
+	//		Decode:   decodeRPCRequest,
+	//		Encode:   encodeRPCResponse,
+	//	}
 
-	m["eth_signTransaction"] = jsonrpc.EndpointCodec{
-		Endpoint: makeEthSignTransactionEndpoint(svc),
-		Decode:   decodeRPCTransactionRequest,
-		Encode:   encodeRPCResponse,
-	}
+	//	m["eth_signTransaction"] = jsonrpc.EndpointCodec{
+	//		Endpoint: makeEthSignTransactionEndpoint(svc),
+	//		Decode:   decodeRPCTransactionRequest,
+	//		Encode:   encodeRPCResponse,
+	//	}
 
 	m["eth_sendRawTransaction"] = jsonrpc.EndpointCodec{
 		Endpoint: makeEthSendRawTransactionEndpoint(svc),
@@ -265,23 +266,23 @@ func MakeRPCHandler(svc transactionExecutorService) *jsonrpc.Server {
 		Encode:   encodeRPCResponse,
 	}
 
-	m["eth_getWork"] = jsonrpc.EndpointCodec{
-		Endpoint: makeEthGetWorkEndpoint(svc),
-		Decode:   decodeRPCRequest,
-		Encode:   encodeRPCResponse,
-	}
+	//	m["eth_getWork"] = jsonrpc.EndpointCodec{
+	//		Endpoint: makeEthGetWorkEndpoint(svc),
+	//		Decode:   decodeRPCRequest,
+	//		Encode:   encodeRPCResponse,
+	//	}
 
-	m["eth_submitWork"] = jsonrpc.EndpointCodec{
-		Endpoint: makeEthSubmitWorkEndpoint(svc),
-		Decode:   decodeRPCRequest,
-		Encode:   encodeRPCResponse,
-	}
+	//	m["eth_submitWork"] = jsonrpc.EndpointCodec{
+	//		Endpoint: makeEthSubmitWorkEndpoint(svc),
+	//		Decode:   decodeRPCRequest,
+	//		Encode:   encodeRPCResponse,
+	//	}
 
-	m["eth_submitHashrate"] = jsonrpc.EndpointCodec{
-		Endpoint: makeEthSubmitHashrateEndpoint(svc),
-		Decode:   decodeRPCRequest,
-		Encode:   encodeRPCResponse,
-	}
+	//	m["eth_submitHashrate"] = jsonrpc.EndpointCodec{
+	//		Endpoint: makeEthSubmitHashrateEndpoint(svc),
+	//		Decode:   decodeRPCRequest,
+	//		Encode:   encodeRPCResponse,
+	//	}
 
 	handler := jsonrpc.NewServer(m)
 
