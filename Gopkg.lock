@@ -20,7 +20,7 @@
   name = "github.com/aristanetworks/goarista"
   packages = ["monotime"]
   pruneopts = "UT"
-  revision = "b7a59f2ffb2369336aaa78fc9a555e4fd277616b"
+  revision = "8f049bdb8feb7d7d5f1a9b9cd854396112fb0c0e"
 
 [[projects]]
   digest = "1:c47f4964978e211c6e566596ec6246c329912ea92e9bb99c00798bb4564c5b09"
@@ -31,7 +31,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:4c6efa6c7b292d10aefe11f526365619ea456341703473b59771f6ca6c2d3c0b"
+  digest = "1:9ec5ac69e78772c13e04476942a847b627807210f63487410d294720057943a9"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -68,8 +68,8 @@
     "service/sts",
   ]
   pruneopts = "UT"
-  revision = "a0a1669c06da522317116cc7624ac257d9c5fdfd"
-  version = "v1.16.21"
+  revision = "3503f7b53173f227ff96dc247983360cc7cb8463"
+  version = "v1.16.25"
 
 [[projects]]
   branch = "master"
@@ -518,12 +518,12 @@
   version = "v1.6.0"
 
 [[projects]]
-  digest = "1:0e792eea6c96ec55ff302ef33886acbaa5006e900fefe82689e88d96439dcd84"
+  digest = "1:6baa565fe16f8657cf93469b2b8a6c61a277827734400d27e44d589547297279"
   name = "github.com/ryanuber/go-glob"
   packages = ["."]
   pruneopts = "UT"
-  revision = "572520ed46dbddaed19ea3d9541bdd0494163693"
-  version = "v0.1"
+  revision = "51a8f68e6c24dc43f1e371749c89a267de4ebc53"
+  version = "v1.0.0"
 
 [[projects]]
   digest = "1:87c2e02fb01c27060ccc5ba7c5a407cc91147726f8f40b70cceeedbc52b1f3a8"
@@ -564,11 +564,11 @@
     "ssh/terminal",
   ]
   pruneopts = "UT"
-  revision = "ff983b9c42bc9fbf91556e191cc8efb585c16908"
+  revision = "057139ce5d2bdbe6fe73c53679e24e9cf007f637"
 
 [[projects]]
   branch = "master"
-  digest = "1:c7b50f32340c0ad798c3196dd72a8d927de1b1ccb678e4a0c24ddcb856f809e8"
+  digest = "1:aa2991c6844d5af657f4900469fd439973fd16264d5b4e17e19df2933727156f"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -584,18 +584,18 @@
     "websocket",
   ]
   pruneopts = "UT"
-  revision = "915654e7eabcea33ae277abbecf52f0d8b7a9fdc"
+  revision = "d26f9f9a57f3fab6a695bec0d84433c2c50f8bbf"
 
 [[projects]]
   branch = "master"
-  digest = "1:43cde116ff48f299eddb7e6515677e6d0a2c915854bb05a333877f07c3bb3033"
+  digest = "1:bb644db32f5bc1e327a0f748ec871edc4dc46f19b4fbbc15bfd95b1460646537"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "11f53e03133963fb11ae0588e08b5e0b85be8be5"
+  revision = "b90733256f2e882e81d52f9126de08df5615afd9"
 
 [[projects]]
   digest = "1:436b24586f8fee329e0dd65fd67c817681420cda1d7f934345c13fe78c212a73"
@@ -646,7 +646,7 @@
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
-  revision = "db91494dd46c1fdcbbde05e5ff5eb56df8f7d79a"
+  revision = "8819c946db4494a2259bf100a377f51aa585d893"
 
 [[projects]]
   digest = "1:a887a56d0ff92cf05b4bb6004b46fc6e64d3fb6aca4eaeb1466bdce183ba5004"
