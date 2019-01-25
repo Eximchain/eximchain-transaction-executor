@@ -2,6 +2,7 @@ eximchain-transaction-executor
 *.db
 c.out
 coverage.html
-keystore
 keystore-local
 node_modules
+
+vendor/github.com/eximchain/go-ethereum/accounts/keystore/testdata
