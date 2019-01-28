@@ -994,6 +994,11 @@ func makeEthSubmitHashrateEndpoint(svc TransactionExecutorService) endpoint.Endp
 
 func decodeRPCRequest(ctx context.Context, msg json.RawMessage) (interface{}, error) {
 	var req interface{}
+	if len(msg) == 0 {
+		// If params argument is omitted, return [] as params
+		req = make([]interface{}, 0)
+		return req, nil
+	}
 	err := json.Unmarshal(msg, &req)
 	if err != nil {
 		return nil, err
