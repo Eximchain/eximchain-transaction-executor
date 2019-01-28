@@ -32,7 +32,7 @@ func main() {
 
 		handler := MakeRPCHandler(svc)
 
-		http.Handle("/", accessControl(handler))
+		http.Handle("/rpc", accessControl(handler))
 
 		log.Fatal(http.ListenAndServe(":8080", nil))
 	}
