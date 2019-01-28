@@ -166,15 +166,14 @@ func RunServerCommand(args []string) {
 			}
 		}()
 	}
-
-	mux := http.NewServeMux()
+	handler := new(http.Handler)
 	if *disableAuthFlag {
-		mux.Handle("/rpc", DisableAuth(MakeRPCHandler(svc)))
+		*handler = DisableAuth(MakeRPCHandler(svc))
 	} else {
-		mux.Handle("/rpc", Auth(db, MakeRPCHandler(svc)))
+		*handler = Auth(db, MakeRPCHandler(svc))
 	}
 
-	http.Handle("/", accessControl(mux))
+	http.Handle("/", accessControl(*handler))
 
 	stopChan := make(chan os.Signal, 1)
 

@@ -8,7 +8,7 @@ const Request = require('request-promise')
 //
 // CONFIG
 //
-const web3Url = 'http://localhost:8080/rpc'
+const web3Url = 'http://localhost:8080/'
 
 
 describe('Web3 RPC Tests', () => {
