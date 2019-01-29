@@ -9,7 +9,7 @@ import (
 
 func testRpc(t *testing.T, token string) *http.Response {
 	jsonStr := []byte(`{"jsonrpc":"2.0","id":2,"method":"eth_syncing","params":[]}`)
-	req, err := http.NewRequest("POST", "http://localhost:8080/rpc", bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequest("POST", "http://localhost:8080/", bytes.NewBuffer(jsonStr))
 	if err != nil {
 		t.Fatalf("NewRequest %v", err)
 	}
