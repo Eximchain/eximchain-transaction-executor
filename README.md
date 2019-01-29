@@ -12,13 +12,13 @@ If authentication is enabled:
 TOKEN=<Token from previous command>
 
 # Make an RPC call
-curl -XPOST -H "Authorization: $TOKEN" -d'{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' localhost:8080/rpc
+curl -XPOST -H "Authorization: $TOKEN" -d'{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' localhost:8080/
 ```
 
 If authentication is disabled:
 
 ```sh
-curl -XPOST -d'{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' localhost:8080/rpc
+curl -XPOST -d'{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' localhost:8080/
 ```
 
 Requests that include the `Authorization:` header will still be accepted if authentication is disabled.
@@ -28,7 +28,7 @@ Requests that include the `Authorization:` header will still be accepted if auth
 ## Server
 
 ```sh
-curl -XPOST -H "Authorization: $TOKEN" -d'{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' localhost:8080/rpc
+curl -XPOST -H "Authorization: $TOKEN" -d'{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' localhost:8080/
 ```
 
 ## User
