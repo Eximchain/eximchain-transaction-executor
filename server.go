@@ -183,13 +183,24 @@ func RunServerCommand(args []string) {
 	srv := &http.Server{Addr: ":8080"}
 
 	go func() {
-		// service connections
+		// service HTTP connections
 		if err := srv.ListenAndServe(); err != nil {
 			log.Printf("listen: %s\n", err)
 			// Unblock the main function
 			stopChan <- os.Interrupt
 		}
 	}()
+
+	// Commented out pending confirmation of the keyfile paths in production.
+	//
+	// go func() {
+	// 	// service HTTPS connections
+	// 	if err := srv.ListenAndServeTLS("/etc/letsencrypt/certFile.pem", "/etc/letsencrypt/privKeyFile.pem"); err != nil {
+	// 		log.Printf("listen: %s\n", err)
+	// 		// Unblock the main function
+	// 		stopChan <- os.Interrupt
+	// 	}
+	// }()
 
 	log.Println("Listening on", srv.Addr)
 
