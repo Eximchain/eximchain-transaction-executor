@@ -180,7 +180,7 @@ func RunServerCommand(args []string) {
 	// subscribe to SIGINT and SIGTERM signals
 	signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
 
-	srv := &http.Server{Addr: ":8080"}
+	srv := &http.Server{}
 
 	go func() {
 		// service HTTP connections
