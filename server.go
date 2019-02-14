@@ -104,6 +104,7 @@ func RunServerCommand(args []string) {
 	authTokenFlag := serverCommand.String("auth-token", "", "An auth token to use instead of AWS authorization, for help with testing")
 	keyDirFlag := serverCommand.String("keystore", "/home/ubuntu/.ethereum/keystore", "The directory to use as a keystore")
 	disableAuthFlag := serverCommand.Bool("disable-auth", false, "Set to disable the authorization token check before serving requests")
+	enableHttpsFlag := serverCommand.Bool("enable-https", false, "Set to enable serving HTTPS at port 8081 using a LetsEncrypt cert named tx-executor")
 	serverCommand.Parse(args)
 
 	// Log Setup
@@ -180,29 +181,31 @@ func RunServerCommand(args []string) {
 	// subscribe to SIGINT and SIGTERM signals
 	signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
 
-	srv := &http.Server{}
-
+	httpSrv := &http.Server{Addr: ":8080"}
 	go func() {
 		// service HTTP connections
-		if err := srv.ListenAndServe(); err != nil {
+		if err := httpSrv.ListenAndServe(); err != nil {
 			log.Printf("listen: %s\n", err)
 			// Unblock the main function
 			stopChan <- os.Interrupt
 		}
 	}()
+	log.Println("HTTP listening on", httpSrv.Addr)
 
-	// Commented out pending confirmation of the keyfile paths in production.
-	//
-	// go func() {
-	// 	// service HTTPS connections
-	// 	if err := srv.ListenAndServeTLS("/etc/letsencrypt/certFile.pem", "/etc/letsencrypt/privKeyFile.pem"); err != nil {
-	// 		log.Printf("listen: %s\n", err)
-	// 		// Unblock the main function
-	// 		stopChan <- os.Interrupt
-	// 	}
-	// }()
+	// Make outside of flag so reference exists lower for shutdown
+	httpsSrv := &http.Server{Addr: ":8081"}
+	if *enableHttpsFlag {
+		go func() {
+			// service HTTPS connections
+			if err := httpsSrv.ListenAndServeTLS("/etc/letsencrypt/live/tx-executor/fullchain.pem", "/etc/letsencrypt/live/tx-executor/privkey.pem"); err != nil {
+				log.Printf("listen: %s\n", err)
+				// Unblock the main function
+				stopChan <- os.Interrupt
+			}
+		}()
 
-	log.Println("Listening on", srv.Addr)
+		log.Println("HTTPS listening on", httpsSrv.Addr)
+	}
 
 	// wait for SIGINT
 	<-stopChan
@@ -213,7 +216,10 @@ func RunServerCommand(args []string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	srv.Shutdown(ctx)
+	httpSrv.Shutdown(ctx)
+	if *enableHttpsFlag {
+		httpsSrv.Shutdown(ctx)
+	}
 
 	log.Println("Server gracefully stopped")
 }
