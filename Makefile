@@ -3,7 +3,7 @@ all: *.go
 	go build
 
 server: *.go
-	go run auth.go db.go main.go rpc.go server.go service.go transport.go user.go server -auth-token test -quorum-address http://127.0.0.1:7545 -keystore ./keystore
+	go run auth.go db.go main.go rpc.go server.go service.go transport.go user.go server -auth-token test -quorum-address http://127.0.0.1:7545 -keystore ./keystore -enable-https
 
 local:
 	go run auth.go db.go main.go rpc.go server.go service.go transport.go user.go local

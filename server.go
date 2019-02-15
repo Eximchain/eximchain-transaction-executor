@@ -193,18 +193,19 @@ func RunServerCommand(args []string) {
 	log.Println("HTTP listening on", httpSrv.Addr)
 
 	// Make outside of flag so reference exists lower for shutdown
-	httpsSrv := &http.Server{Addr: ":8081"}
+	// httpsSrv := &http.Server{Addr: ":8080"}
 	if *enableHttpsFlag {
-		go func() {
-			// service HTTPS connections
-			if err := httpsSrv.ListenAndServeTLS("/etc/letsencrypt/live/tx-executor/fullchain.pem", "/etc/letsencrypt/live/tx-executor/privkey.pem"); err != nil {
-				log.Printf("listen: %s\n", err)
-				// Unblock the main function
-				stopChan <- os.Interrupt
-			}
-		}()
 
-		log.Println("HTTPS listening on", httpsSrv.Addr)
+		// go func() {
+		// 	// service HTTPS connections
+		// 	if err := httpsSrv.ListenAndServeTLS("/etc/letsencrypt/live/tx-executor/fullchain.pem", "/etc/letsencrypt/live/tx-executor/privkey.pem"); err != nil {
+		// 		log.Printf("listen: %s\n", err)
+		// 		// Unblock the main function
+		// 		stopChan <- os.Interrupt
+		// 	}
+		// }()
+
+		// log.Println("HTTPS listening on", httpsSrv.Addr)
 	}
 
 	// wait for SIGINT
@@ -217,9 +218,9 @@ func RunServerCommand(args []string) {
 	defer cancel()
 
 	httpSrv.Shutdown(ctx)
-	if *enableHttpsFlag {
-		httpsSrv.Shutdown(ctx)
-	}
+	// if *enableHttpsFlag {
+	// 	httpsSrv.Shutdown(ctx)
+	// }
 
 	log.Println("Server gracefully stopped")
 }
